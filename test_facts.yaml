@@ -1,0 +1,35 @@
+---
+- name: Test Siklu Facts Module
+  hosts: siklu_devices
+  gather_facts: false
+
+  tasks:
+    - name: Gather all facts
+      siklu.eh.siklu_facts:
+      register: facts
+
+    - name: Display system information
+      debug:
+        var: facts.ansible_facts.ansible_net_system
+
+    - name: Display software banks
+      debug:
+        var: facts.ansible_facts.ansible_net_software
+
+    - name: Display IP configuration
+      debug:
+        var: facts.ansible_facts.ansible_net_ip
+
+    - name: Display routes
+      debug:
+        var: facts.ansible_facts.ansible_net_route
+
+    - name: Gather only system facts
+      siklu.eh.siklu_facts:
+        gather_subset:
+          - system
+      register: system_only
+
+    - name: Display system-only facts
+      debug:
+        var: system_only.ansible_facts

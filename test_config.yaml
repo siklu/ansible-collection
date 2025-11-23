@@ -1,0 +1,98 @@
+---
+- name: Test Siklu Config Module
+  hosts: siklu_devices
+  gather_facts: false
+
+  tasks:
+    - name: Show current IP configuration (read-only check)
+      siklu.eh.siklu_command:
+        commands:
+          - show ip
+      register: current_ip
+
+    - name: Display current IP
+      debug:
+        var: current_ip.stdout_lines
+
+    - name: Configure test IP on slot 4 (non-management)
+      siklu.eh.siklu_config:
+        config:
+          - type: ip
+            slot: 4
+            ip_address: 10.10.10.10
+            prefix_len: 24
+            vlan: 100
+        show:
+          - type: ip
+            slot: 4
+      register: ip_result
+
+    - name: Display IP configuration result
+      debug:
+        var: ip_result
+
+    - name: Configure test route on slot 4 (non-critical route)
+      siklu.eh.siklu_config:
+        config:
+          - type: route
+            slot: 4
+            dest: 172.16.0.0
+            prefix_len: 12
+            next_hop: 10.10.10.1
+        show:
+          - type: route
+            slot: 4
+      register: route_result
+
+    - name: Display route configuration result
+      debug:
+        var: route_result
+
+    - name: Configure another test route on slot 5
+      siklu.eh.siklu_config:
+        config:
+          - type: route
+            slot: 5
+            dest: 192.168.100.0
+            prefix_len: 24
+            next_hop: 10.10.10.254
+        show:
+          - type: route
+            slot: 5
+      register: route2_result
+
+    - name: Display second route result
+      debug:
+        var: route2_result
+
+    - name: Test idempotency - reconfigure same route
+      siklu.eh.siklu_config:
+        config:
+          - type: route
+            slot: 4
+            dest: 172.16.0.0
+            prefix_len: 12
+            next_hop: 10.10.10.1
+      register: idempotent_result
+
+    - name: Verify idempotency (should not change)
+      debug:
+        msg: "Changed: {{ idempotent_result.changed }} (should be false)"
+
+    - name: Assert idempotency worked
+      assert:
+        that:
+          - not idempotent_result.changed
+        fail_msg: "Idempotency failed - configuration changed when it shouldn't"
+        success_msg: "Idempotency test passed - no unnecessary changes"
+
+    - name: Show final configuration
+      siklu.eh.siklu_command:
+        commands:
+          - show ip
+          - show route
+      register: final_config
+
+    - name: Display final configuration
+      debug:
+        var: final_config.stdout_lines

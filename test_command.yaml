@@ -1,0 +1,55 @@
+---
+- name: Test Siklu Command Module
+  hosts: siklu_devices
+  gather_facts: false
+
+  tasks:
+    - name: Execute show system
+      siklu.eh.siklu_command:
+        commands:
+          - show system
+      register: system_result
+
+    - name: Display system info
+      debug:
+        var: system_result.stdout_lines
+
+    - name: Execute show sw
+      siklu.eh.siklu_command:
+        commands:
+          - show sw
+      register: sw_result
+
+    - name: Display software info
+      debug:
+        var: sw_result.stdout_lines
+
+    - name: Execute show ip
+      siklu.eh.siklu_command:
+        commands:
+          - show ip
+      register: ip_result
+
+    - name: Display IP info
+      debug:
+        var: ip_result.stdout_lines
+
+    - name: Execute multiple commands at once
+      siklu.eh.siklu_command:
+        commands:
+          - show system
+          - show sw
+          - show ip
+      register: multi_result
+
+    - name: Display multi-command result
+      debug:
+        msg: "Executed {{ multi_result.stdout | length }} commands successfully"
+
+    - name: Save configuration
+      siklu.eh.siklu_save_config:
+      register: save_result
+
+    - name: Display save result
+      debug:
+        msg: "{{ save_result.msg }}"

@@ -1,0 +1,39 @@
+namespace: siklu
+name: eh
+version: 1.0.0
+readme: README.md
+authors:
+  - Dmitry Grinberg <dmitryg@ceragon.com>
+description: Ansible Collection for Siklu EH millimeter-wave radio devices
+license:
+  - MIT
+repository: https://github.com/siklu/ansible-collection
+documentation: https://github.com/siklu/ansible-collection
+issues: https://github.com/siklu/ansible-collection/issues
+
+tags:
+  - siklu
+  - millimeterwave
+  - network
+  - wireless
+  - radio
+  - eh8010
+  - eh8020
+
+dependencies:
+  ansible.netcommon: ">=8.1.0"
+
+build_ignore:
+  - .gitignore
+  - .git
+  - .github
+  - tests/output
+  - '*.pyc'
+  - '*.retry'
+  - '*.tar.gz'
+  - __pycache__
+  - .pytest_cache
+  - venv
+  - .venv
+  - .idea
+  - .vscode
