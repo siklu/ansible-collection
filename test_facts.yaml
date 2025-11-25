@@ -7,7 +7,7 @@
   gather_facts: false
   
   tasks:
-    # Test 1: Gather all facts (default - excludes config)
+    # Test 1: Gather default facts (excludes config, config_startup, inventory, rf)
     - name: Gather all default facts
       siklu.eh.siklu_facts:
       register: all_facts
@@ -207,14 +207,14 @@
     # Test 9: Configuration backup use case
     - name: Backup running config to file
       copy:
-        content: "{{ running_config.ansible_facts.ansible_net_config }}"
+        content: "{{ running_config.ansible_facts.ansible_net_config | default('') }}"
         dest: "/tmp/{{ inventory_hostname }}_running_config.txt"
       delegate_to: localhost
       when: running_config.ansible_facts.ansible_net_config is defined
 
     - name: Backup startup config to file
       copy:
-        content: "{{ startup_config.ansible_facts.ansible_net_config_startup }}"
+        content: "{{ startup_config.ansible_facts.ansible_net_config_startup | default('') }}"
         dest: "/tmp/{{ inventory_hostname }}_startup_config.txt"
       delegate_to: localhost
       when: startup_config.ansible_facts.ansible_net_config_startup is defined
@@ -243,7 +243,6 @@
           RF Link Quality: GOOD
           {% endif %}
 
-
     # Test 11: Hardware audit
     - name: Extract all serial numbers from inventory
       set_fact:
@@ -260,7 +259,6 @@
           Device Model: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.model_name }}
           Total Components: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.components | length }}
 
-
     # Test 12: Error handling - invalid subset
     - name: Test invalid gather_subset
       siklu.eh.siklu_facts:
@@ -273,8 +271,8 @@
       assert:
         that:
           - invalid_result.failed
-        msg: "Invalid subset should have failed"
-
+          - invalid_result.msg is search('Got no match for')
+        msg: "Invalid subset should have failed with the correct error message"
 
     # Summary report
     - name: Generate facts gathering summary

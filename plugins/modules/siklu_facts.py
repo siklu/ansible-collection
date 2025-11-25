@@ -191,8 +191,8 @@ ansible_facts:
       type: dict
       sample: {
         "operational": "up",
-        "tx_state": "sync",
-        "rx_state": "sync",
+        "tx_state": "normal",
+        "rx_state": "normal",
         "cinr": 28.0,
         "rssi": -28.0,
         "tx_frequency": 82000,
@@ -298,9 +298,10 @@ class FactsGatherer:
             output = self.connection.get(command)
             return output
         except ConnectionError as exc:
-            raise Exception(f"Connection error executing '{command}': {str(exc)}")
+            raise Exception(f"Connection error executing '{command}': {str(exc)}") from exc
         except Exception as exc:
-            raise Exception(f"Failed to execute '{command}': {str(exc)}")
+            raise Exception(f"Failed to execute '{command}': {str(exc)}") from exc
+
 
     def gather_system_facts(self) -> None:
         """Gather system information facts."""
