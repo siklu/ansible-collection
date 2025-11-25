@@ -256,8 +256,8 @@
     - name: Display hardware audit summary
       debug:
         msg: |
-          Device Model: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.model_name }}
-          Total Components: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.components | length }}
+          Device Model: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.model_name | default('N/A') }}
+          Total Components: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.components | default([]) | length }}
 
     # Test 12: Error handling - invalid subset
     - name: Test invalid gather_subset
