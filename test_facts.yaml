@@ -271,7 +271,7 @@
       assert:
         that:
           - invalid_result.failed
-          - invalid_result.msg is search('Got no match for')
+          - invalid_result.msg is search('Invalid gather_subset values:')
         msg: "Invalid subset should have failed with the correct error message"
 
     # Summary report
