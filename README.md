@@ -333,31 +333,6 @@ ansible-playbook test_config.yaml -i inventory.ini -v
 ansible-playbook test_facts.yaml -i inventory.ini -v
 ```
 
-## Security Best Practices
-
-⚠️ **WARNING** - Network Configuration Safety
-
-**NEVER configure production routes/IPs remotely without:**
-- Out-of-band (OOB) access (serial console, IPMI, etc.)
-- Backup connection path
-- Testing on non-critical slots first
-
-**Safe test slots:** 4, 5, 6, 7
-**Critical slots (avoid in tests):** 1, 2, 3
-
-### Handling Credentials
-
-- Never commit passwords to git
-- Use Ansible vault for sensitive data:
-  ```bash
-  ansible-vault encrypt inventory.ini
-  ansible-playbook playbook.yaml -i inventory.ini --ask-vault-pass
-  ```
-- Use environment variables:
-  ```bash
-  export ANSIBLE_NET_PASSWORD=your_password
-  ```
-
 ## Development
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for:

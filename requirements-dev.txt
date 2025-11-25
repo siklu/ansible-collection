@@ -1,6 +1,5 @@
 # Development environment - Ansible 13.x series
 ansible>=13.0.0,<14.0.0
-ansible.netcommon>=8.1.0
 
 # SSH/Network connectivity
 ansible-pylibssh>=1.3.0,<2.0.0
