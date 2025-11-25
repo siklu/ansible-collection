@@ -79,10 +79,10 @@ ansible-galaxy collection install siklu-eh-*.tar.gz --force
     - name: Show inventory and RF
       debug:
         msg: |
-          Model: {{ inv.ansible_facts.ansible_net_inventory.chassis.model_name }}
-          Serial: {{ inv.ansible_facts.ansible_net_inventory.chassis.serial }}
-          RF status: {{ rf.ansible_facts.ansible_net_rf.operational }}
-          CINR: {{ rf.ansible_facts.ansible_net_rf.cinr }} dB
+          Model: {{ inv.ansible_facts.ansible_net_inventory.chassis.model_name | default('N/A') }}
+          Serial: {{ inv.ansible_facts.ansible_net_inventory.chassis.serial | default('N/A') }}
+          RF status: {{ rf.ansible_facts.ansible_net_rf.operational | default('Unknown') }}
+          CINR: {{ rf.ansible_facts.ansible_net_rf.cinr | default('N/A') }} dB
 ```
 
 ### Configuration Backup
