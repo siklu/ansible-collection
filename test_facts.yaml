@@ -50,10 +50,10 @@
     - name: Display chassis information
       debug:
         msg: |
-          Chassis: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.desc }}
-          Serial: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.serial }}
-          HW Rev: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.hw_rev }}
-          SW Ver: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.sw_rev }}
+          Chassis: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.desc | default('N/A') }}
+          Serial: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.serial | default('N/A') }}
+          HW Rev: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.hw_rev | default('N/A') }}
+          SW Ver: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.sw_rev | default('N/A') }}
           Components: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.components | length }}
 
 
