@@ -253,7 +253,6 @@ class FactsGatherer:
         self.module = module
         self.connection = Connection(module._socket_path)
         self.facts = {}
-        self.warnings = []
 
     def validate_gather_subset(self, gather_subset: list[str]) -> list[str]:
         """

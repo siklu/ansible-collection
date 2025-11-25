@@ -349,77 +349,74 @@ def _convert_to_bool(value: str) -> bool | None:
 
 def parse_inventory(output: str) -> dict[str, Any]:
     """
-    Parse 'show inventory' command output into hierarchical structure.
-
-    The inventory has a tree structure where components can contain other components.
-    The 'cont-in' field indicates the parent component ID (0 means root/chassis).
+    Parse 'show inventory' output into hierarchical structure.
 
     Args:
         output: Raw output from 'show inventory' command
 
     Returns:
-        Hierarchical dictionary representing the inventory tree with chassis as root
+        Dictionary with 'chassis' key containing hierarchical inventory tree
     """
-    # First pass: parse all components as flat list
-    components_by_id = {}
-    current_id = None
-    current_component = {}
+    components_by_id: dict[int, dict[str, Any]] = {}
 
-    for line in output.splitlines():
+    for line in output.strip().split("\n"):
         line = line.strip()
-        if not line or line.startswith("#"):
+        if not line:
             continue
 
-        # Match "inventory <id> <key> : <value>"
-        match = re.match(r"inventory\s+(\d+)\s+(\S+)\s*:\s*(.+)", line)
-        if match:
-            comp_id = int(match.group(1))
-            key = match.group(2).replace("-", "_")
-            value = match.group(3).strip()
+        # Match "inventory <id> <key> : <value>" - uses .* to handle empty values
+        match = re.match(r"inventory\s+(\d+)\s+(\S+)\s*:\s*(.*)", line)
+        if not match:
+            continue
 
-            if current_id != comp_id:
-                if current_component:
-                    components_by_id[current_id] = current_component
-                current_id = comp_id
-                current_component = {"id": comp_id}
+        comp_id = int(match.group(1))
+        key = match.group(2).replace("-", "_")
+        value = match.group(3).strip()
 
-            # Type conversions
-            if key == "cont_in" or key == "rel_pos":
-                current_component[key] = _convert_to_int(value)
-            elif key == "fru":
-                current_component[key] = _convert_to_bool(value)
-            else:
-                current_component[key] = _normalize_empty_value(value)
+        # Initialize component dict if not exists
+        if comp_id not in components_by_id:
+            components_by_id[comp_id] = {"id": comp_id}
 
-    if current_component:
-        components_by_id[current_id] = current_component
+        current_component = components_by_id[comp_id]
 
-    # Second pass: build hierarchical structure
-    def build_hierarchy(parent_id: int) -> list[dict[str, Any]]:
-        """Recursively build component hierarchy."""
-        children = []
-        for comp_id, component in components_by_id.items():
-            if component.get("cont_in") == parent_id:
-                comp_copy = component.copy()
-                # Add nested components
-                nested = build_hierarchy(comp_id)
-                if nested:
-                    comp_copy["components"] = nested
-                children.append(comp_copy)
-        # Sort by rel_pos if available
-        children.sort(key=lambda x: x.get("rel_pos", 999))
-        return children
+        # Type conversions
+        if key == "cont_in" or key == "rel_pos":
+            current_component[key] = _convert_to_int(value)
+        elif key == "fru":
+            current_component[key] = _convert_to_bool(value)
+        else:
+            normalized = _normalize_empty_value(value)
+            if normalized is not None:
+                current_component[key] = normalized
 
     # Find chassis (cont_in == 0)
     chassis = None
-    for comp_id, component in components_by_id.items():
+    for component in components_by_id.values():
         if component.get("cont_in") == 0:
-            chassis = component.copy()
-            chassis["components"] = build_hierarchy(comp_id)
+            chassis = component
             break
 
-    return {"chassis": chassis} if chassis else {}
+    if not chassis:
+        return {"chassis": {}}
 
+    def build_hierarchy(parent_id: int) -> list[dict[str, Any]]:
+        """Recursively build component hierarchy."""
+        children = []
+        for child_id, child_component in components_by_id.items():
+            if child_component.get("cont_in") == parent_id:
+                comp_copy = child_component.copy()
+                nested = build_hierarchy(child_id)
+                comp_copy["components"] = nested  # Always add for consistency
+                children.append(comp_copy)
+        children.sort(key=lambda x: x.get("rel_pos", 999))
+        return children
+
+    chassis_id = chassis.get("id")
+    if not isinstance(chassis_id, int):
+        return {"chassis": {}}  # Shouldn't happen, but safe
+
+    chassis["components"] = build_hierarchy(chassis_id)
+    return {"chassis": chassis}
 
 def parse_rf_status(output: str) -> dict[str, Any]:
     """
@@ -453,7 +450,7 @@ def parse_rf_status(output: str) -> dict[str, Any]:
             continue
 
         # Match "rf <key> : <value>"
-        match = re.match(r"rf\s+(\S+)\s*:\s*(.+)", line)
+        match = re.match(r"rf\s+(\S+)\s*:\s*(.*)", line)
         if match:
             key = match.group(1).replace("-", "_")
             value = match.group(2).strip()

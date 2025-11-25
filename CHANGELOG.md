@@ -8,13 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1] - 2025-11-25
 
 ### Added
-- New fact subsets in `siklu_facts` module: `inventory`, `rf`, `config`
+- New fact subsets in `siklu_facts` module: `inventory`, `rf`, `config`, `config_startup`
 - Hierarchical hardware inventory parsing
 - RF radio status monitoring with type conversions
 - Running and startup configuration reading capability via facts
 
 ### Changed
-- `siklu_facts` now excludes `config` subset from `all` by default (must be explicitly requested)
+- `siklu_facts` now excludes `config` and `config_startup` subsets from `all` by default (must be explicitly requested)
 
 ### Fixed
 - Proper network connection handling in facts module

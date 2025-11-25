@@ -178,7 +178,7 @@ inventory 14 fru                       : true
         # Find component with empty values
         bb_board = chassis["components"][0]
         
-        # Empty fields are not added to dict, .get() returns None
+        # Empty fields are set to None in the dict
         assert bb_board.get("fw_rev") is None
         assert bb_board.get("sw_rev") is None
         
@@ -369,3 +369,38 @@ set rf  mode 'adaptive qam32'  tx-power 14  lowest-modulation bpsk1
         assert "# license configuring" in result
         assert "# ip configuring" in result
         assert "# rf configuring" in result
+
+    def test_parse_inventory_orphaned_components(self):
+        """Verify that orphaned components (invalid cont-in) are handled gracefully."""
+        orphaned_output = """
+    inventory 1 desc                      : Chassis
+    inventory 1 cont-in                   : 0
+    inventory 1 class                     : chassis
+    inventory 1 serial                    : TEST123
+    inventory 1 fru                       : true
+
+    inventory 99 desc                      : Orphaned Module
+    inventory 99 cont-in                   : 50
+    inventory 99 class                     : module
+    inventory 99 serial                    : ORPHAN999
+    inventory 99 fru                       : false
+    """
+        result = parse_inventory(orphaned_output)
+        chassis = result["chassis"]
+
+        # Chassis should exist
+        assert chassis["id"] == 1
+        assert chassis["serial"] == "TEST123"
+
+        assert len(chassis["components"]) == 0
+
+        def find_component_recursive(comp_tree: list, comp_id: int) -> bool:
+            for comp in comp_tree:
+                if comp["id"] == comp_id:
+                    return True
+                if find_component_recursive(comp.get("components", []), comp_id):
+                    return True
+            return False
+
+        assert not find_component_recursive(chassis.get("components", []), 99), \
+            "Orphaned component should not appear in hierarchy"
