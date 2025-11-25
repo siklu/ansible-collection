@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-11-25
+
+### Added
+- New fact subsets in `siklu_facts` module: `inventory`, `rf`, `config`, `config_startup`
+- Hierarchical hardware inventory parsing
+- RF radio status monitoring with type conversions
+- Running and startup configuration reading capability via facts
+
+### Changed
+- `siklu_facts` now excludes `config` and `config_startup` subsets from `all` by default (must be explicitly requested)
+
+### Fixed
+- Proper network connection handling in facts module
+
 ## [1.0.0] - 2025-11-23
 
 ### Added
@@ -28,26 +42,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Idempotent configuration operations with verification
 - Support for Ansible 2.20.0+
 - Support for Python 3.11+
-
-### Features
-
-- ✅ Execute arbitrary show commands on devices
-- ✅ Configure IP addresses with validation
-- ✅ Configure static routes with verification
-- ✅ Gather complete device facts
-- ✅ Save configuration to persistent storage
-- ✅ Idempotent operations (no unnecessary changes)
-- ✅ DRY architecture with shared utilities
-- ✅ Full type safety with Python type hints
-- ✅ Comprehensive error handling
-- ✅ Production-ready code quality
-
-### Documentation
-
-- README.md with quick start guide
-- CONTRIBUTING.md with development guidelines
-- Complete module documentation
-- Usage examples for all modules
-- Security best practices guide
-- Troubleshooting section
-- Architecture documentation

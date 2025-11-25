@@ -9,9 +9,9 @@ description:
   - Executes 'copy running-configuration startup-configuration' command
   - Commits the current running configuration to persistent storage
   - Ensures configuration survives device reboot
-version_added: "1.0.0"
+version_added: "1.0.1"
 author:
-  - Dmitry Grinberg (@siklu)
+  - Ceragon Networks DevOps Team
 """
 
 EXAMPLES = """

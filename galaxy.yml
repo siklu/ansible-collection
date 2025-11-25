@@ -1,9 +1,9 @@
 namespace: siklu
 name: eh
-version: 1.0.0
+version: 1.0.1
 readme: README.md
 authors:
-  - Dmitry Grinberg <dmitryg@ceragon.com>
+  - Ceragon Networks DevOps Team
 description: Ansible Collection for Siklu EH millimeter-wave radio devices
 license:
   - MIT
@@ -37,3 +37,4 @@ build_ignore:
   - .venv
   - .idea
   - .vscode
+  - collections

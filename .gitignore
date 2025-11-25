@@ -209,3 +209,6 @@ __marimo__/
 #build artifacts
 *.tar.gz
 *.whl
+
+# Ansible collections
+collections/
