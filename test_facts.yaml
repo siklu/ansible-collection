@@ -285,7 +285,7 @@
           Model: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.model_name | default('Unknown') }}
           Serial: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.serial | default('Unknown') }}
           Software: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.sw_rev | default('Unknown') }}
-          RF Status: {{ rf_facts.ansible_facts.ansible_net_rf.operational }}
+          RF Status: {{ rf_facts.ansible_facts.ansible_net_rf.operational | default('Unknown') }}
           RF Mode: {{ rf_facts.ansible_facts.ansible_net_rf.mode | default('N/A') }}
           Running Config Lines: {{ running_config.ansible_facts.ansible_net_config.splitlines() | length }}
           Startup Config Lines: {{ startup_config.ansible_facts.ansible_net_config_startup.splitlines() | length }}
