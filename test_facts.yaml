@@ -81,7 +81,7 @@
           TX Freq: {{ rf_facts.ansible_facts.ansible_net_rf.tx_frequency }} MHz
           RX Freq: {{ rf_facts.ansible_facts.ansible_net_rf.rx_frequency }} MHz
           Channel Width: {{ rf_facts.ansible_facts.ansible_net_rf.channel_width }} MHz
-          Mode: {{ rf_facts.ansible_facts.ansible_net_rf.mode }}
+          Mode: {{ rf_facts.ansible_facts.ansible_net_rf.mode | default('N/A') }}
     
     - name: Verify RF numeric types
       assert:
