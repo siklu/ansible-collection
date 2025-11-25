@@ -21,6 +21,8 @@
           - all_facts.ansible_facts.ansible_net_route is defined
           - all_facts.ansible_facts.ansible_net_config is not defined
           - all_facts.ansible_facts.ansible_net_config_startup is not defined
+          - all_facts.ansible_facts.ansible_net_inventory is not defined
+          - all_facts.ansible_facts.ansible_net_rf is not defined
         msg: "Default facts gathering failed"
     
     - name: Display system name
@@ -99,8 +101,8 @@
     - name: Display RF signal quality (when up)
       debug:
         msg: |
-          CINR: {{ rf_facts.ansible_facts.ansible_net_rf.cinr }} dB
-          RSSI: {{ rf_facts.ansible_facts.ansible_net_rf.rssi }} dBm
+          CINR: {{ rf_facts.ansible_facts.ansible_net_rf.cinr | default('N/A') }} dB
+          RSSI: {{ rf_facts.ansible_facts.ansible_net_rf.rssi | default('N/A') }} dBm
       when: rf_facts.ansible_facts.ansible_net_rf.operational == "up"
 
 
@@ -235,8 +237,8 @@
           {% if rf_check.failed %}
           RF Link Quality: POOR
           - Operational: {{ rf_facts.ansible_facts.ansible_net_rf.operational }}
-          - CINR: {{ rf_facts.ansible_facts.ansible_net_rf.cinr }} (threshold: >10 dB)
-          - RSSI: {{ rf_facts.ansible_facts.ansible_net_rf.rssi }} (threshold: >-70 dBm)
+          - CINR: {{ rf_facts.ansible_facts.ansible_net_rf.cinr | default('N/A') }} (threshold: >10 dB)
+          - RSSI: {{ rf_facts.ansible_facts.ansible_net_rf.rssi | default('N/A') }} (threshold: >-70 dBm)
           {% else %}
           RF Link Quality: GOOD
           {% endif %}
