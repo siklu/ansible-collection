@@ -1,6 +1,6 @@
 namespace: siklu
 name: eh
-version: 1.0.0
+version: 1.0.1
 readme: README.md
 authors:
   - Dmitry Grinberg <dmitryg@ceragon.com>
@@ -37,3 +37,4 @@ build_ignore:
   - .venv
   - .idea
   - .vscode
+  - collections

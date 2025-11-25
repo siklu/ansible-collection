@@ -9,7 +9,7 @@ description:
   - Configure IP addresses and routes on Siklu EH devices
   - Idempotent - checks current configuration before making changes
   - Validates configuration after applying changes
-version_added: "1.0.0"
+version_added: "1.0.1"
 options:
   config:
     description: List of configuration items
