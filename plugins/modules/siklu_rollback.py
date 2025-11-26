@@ -212,7 +212,8 @@ def main() -> None:
                     response = clear_rollback(connection)
                     
                     # Verify response indicates success
-                    if 'rollback cleared' not in response:
+                    response_lower = response.lower()
+                    if 'rollback cleared' not in response_lower:
                         module.fail_json(msg=f'Unexpected response from clear rollback: {response}')
                 
                 changed = True
