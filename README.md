@@ -189,7 +189,7 @@ Gather facts from Siklu device:
 
 ### siklu_rollback
 
-** CRITICAL: Use rollback protection for all remote device configuration to prevent connectivity loss.**
+**CRITICAL: Use rollback protection for all remote device configuration to prevent connectivity loss.**
 
 Manage rollback protection on Siklu devices. Rollback is a safety mechanism that automatically reboots the device to saved startup configuration if no commands are executed within the timeout period.
 
