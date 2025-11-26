@@ -30,7 +30,7 @@
     - name: Verify rollback was enabled
       assert:
         that:
-          - enable_result.changed == true
+          - enable_result.changed is true
           - enable_result.state == 'present'
           - enable_result.timeout == 300
         msg: "Rollback enable failed"
@@ -56,7 +56,7 @@
     - name: Verify idempotency (no change)
       assert:
         that:
-          - idempotent_result.changed == false
+          - idempotent_result.changed is false
           - idempotent_result.timeout == 300
         msg: "Rollback not idempotent with same timeout"
 
@@ -69,7 +69,7 @@
     - name: Verify timeout was changed
       assert:
         that:
-          - change_timeout.changed == true
+          - change_timeout.changed is true
           - change_timeout.timeout == 600
         msg: "Timeout change failed"
 
@@ -93,9 +93,9 @@
     - name: Verify rollback was cleared
       assert:
         that:
-          - clear_result.changed == true
+          - clear_result.changed is true
           - clear_result.state == 'absent'
-          - clear_result.timeout == None
+          - clear_result.timeout is none
         msg: "Rollback clear failed"
 
     - name: Test 8 - Check rollback status after clear
@@ -118,7 +118,7 @@
     - name: Verify clear idempotency
       assert:
         that:
-          - clear_idempotent.changed == false
+          - clear_idempotent.changed is false
         msg: "Clear rollback not idempotent"
 
     - name: Test 10 - Check mode test (enable)
@@ -131,7 +131,7 @@
     - name: Verify check mode (no actual change)
       assert:
         that:
-          - check_enable.changed == true  # Would change
+          - check_enable.changed is true  # Would change
         msg: "Check mode enable failed"
 
     - name: Test 11 - Verify check mode didn't actually enable
@@ -149,7 +149,7 @@
     - name: Test summary
       debug:
         msg: |
-          ✅ All rollback tests passed:
+          All rollback tests passed:
           - Enable rollback
           - Idempotency with same timeout
           - Change timeout

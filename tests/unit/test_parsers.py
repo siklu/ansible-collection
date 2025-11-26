@@ -454,3 +454,9 @@ class TestRollbackParser:
         # Should return default values
         assert result['active'] is False
         assert result['timeout'] is None
+
+    def test_parse_rollback_malformed_timeout(self):
+        """Test parsing with malformed timeout value."""
+        result = parse_rollback_status("rollback timeout                   : invalid\n")
+        assert result['active'] is False
+        assert result['timeout'] is None

@@ -533,9 +533,3 @@ def parse_rollback_status(output: str) -> dict:
                         result['timeout'] = timeout
 
     return result
-
-# Aliases for backward compatibility
-parse_show_system = parse_system_info
-parse_show_sw = parse_sw_info
-parse_show_ip = parse_ip_config
-parse_show_route = parse_route_config

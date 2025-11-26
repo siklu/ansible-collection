@@ -299,7 +299,7 @@ Manage rollback protection on Siklu devices. Rollback is a safety mechanism that
       rescue:
         - name: Config failed - rollback will auto-revert
           debug:
-            msg: "Device will auto-reboot to startup config in {{ rollback_timeout }}s"
+            msg: "Configuration failed. Device will auto-reboot to startup config."
 ```
 
 **Best Practices:**
