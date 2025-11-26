@@ -9,6 +9,7 @@ from ansible_collections.siklu.eh.plugins.module_utils.siklu_eh.parsers import (
     parse_inventory,
     parse_rf_status,
     parse_configuration,
+    parse_rollback_status,
     _normalize_empty_value,
     _convert_to_int,
     _convert_to_float,
@@ -404,3 +405,58 @@ set rf  mode 'adaptive qam32'  tx-power 14  lowest-modulation bpsk1
 
         assert not find_component_recursive(chassis.get("components", []), 99), \
             "Orphaned component should not appear in hierarchy"
+
+
+class TestRollbackParser:
+    """Test rollback status parsing."""
+
+    @pytest.fixture
+    def rollback_not_started(self):
+        """Rollback output when not active."""
+        return "rollback timeout                   : not started\n"
+
+    @pytest.fixture
+    def rollback_active(self):
+        """Rollback output when active with 9000 second timeout."""
+        return "rollback timeout                   : 9000\n"
+
+    @pytest.fixture
+    def rollback_active_short(self):
+        """Rollback output with short timeout."""
+        return "rollback timeout                   : 300\n"
+
+    def test_parse_rollback_not_started(self, rollback_not_started):
+        """Test parsing when rollback is not started."""
+        result = parse_rollback_status(rollback_not_started)
+
+        assert result['active'] is False
+        assert result['timeout'] is None
+
+    def test_parse_rollback_active(self, rollback_active):
+        """Test parsing when rollback is active."""
+        result = parse_rollback_status(rollback_active)
+
+        assert result['active'] is True
+        assert isinstance(result['timeout'], int)
+        assert result['timeout'] == 9000
+
+    def test_parse_rollback_active_short_timeout(self, rollback_active_short):
+        """Test parsing with different timeout value."""
+        result = parse_rollback_status(rollback_active_short)
+
+        assert result['active'] is True
+        assert result['timeout'] == 300
+
+    def test_parse_rollback_empty_output(self):
+        """Test parsing with empty output."""
+        result = parse_rollback_status("")
+
+        # Should return default values
+        assert result['active'] is False
+        assert result['timeout'] is None
+
+    def test_parse_rollback_malformed_timeout(self):
+        """Test parsing with malformed timeout value."""
+        result = parse_rollback_status("rollback timeout                   : invalid\n")
+        assert result['active'] is False
+        assert result['timeout'] is None

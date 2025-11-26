@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-11-26
+
+### Added
+- **`siklu_rollback` module** - Manage rollback protection for safe remote device configuration
+  - Enable rollback with configurable timeout (0-86400 seconds)
+  - Clear rollback to confirm configuration changes
+  - Automatic device reboot to startup config on timeout expiration
+  - Idempotent operations (setting same timeout = no change)
+  - Full unit and integration test coverage
+  - **Recommended for all configuration changes on remote devices**
+- Rollback status parser (`parse_rollback_status()` in `parsers.py`)
+- Rollback connection utilities (`get_rollback_status()`, `set_rollback()`, `clear_rollback()` in `connection_utils.py`)
+- Unit tests for rollback parser (`TestRollbackParser` class)
+- Integration test playbook (`test_rollback.yaml`)
+- Makefile target `test-rollback` for rollback integration tests
+- Comprehensive rollback documentation in README with usage examples and best practices
+
+### Changed
+- Updated README with rollback protection warning and recommended workflows
+- Updated `test-all` Makefile target to include rollback tests
+- Enhanced documentation with point-to-point link workflows and error handling examples
+
 ## [1.0.1] - 2025-11-25
 
 ### Added
