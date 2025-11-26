@@ -488,7 +488,7 @@ def parse_configuration(output: str) -> str:
 
     return "\n".join(lines)
 
-def parse_rollback_status(output: str) -> dict:
+def parse_rollback_status(output: str) -> dict[str, bool | int | None]:
     """
     Parse 'show rollback' command output.
 

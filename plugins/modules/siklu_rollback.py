@@ -190,7 +190,8 @@ def main() -> None:
                     response = set_rollback(connection, timeout)
                     
                     # Verify response indicates success
-                    if 'Set done' not in response and 'rollbacktimeout' not in response:
+                    response_lower = response.lower()
+                    if 'set done' not in response_lower and 'rollbacktimeout' not in response_lower:
                         module.fail_json(msg=f'Unexpected response from set rollback: {response}')
                 
                 changed = True
