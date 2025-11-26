@@ -1,0 +1,158 @@
+---
+# Integration test playbook for siklu_rollback module
+# Tests rollback functionality on live Siklu EH devices
+#
+# Usage:
+#   ansible-playbook test_rollback.yaml -i inventory.ini -v
+
+- name: Test siklu_rollback module
+  hosts: siklu_devices
+  gather_facts: false
+  connection: ansible.netcommon.network_cli
+
+  tasks:
+    - name: Test 1 - Get initial rollback status
+      siklu.eh.siklu_command:
+        commands:
+          - show rollback
+      register: initial_status
+
+    - name: Display initial rollback status
+      debug:
+        var: initial_status.stdout_lines
+
+    - name: Test 2 - Enable rollback protection (300 seconds)
+      siklu.eh.siklu_rollback:
+        state: present
+        timeout: 300
+      register: enable_result
+
+    - name: Verify rollback was enabled
+      assert:
+        that:
+          - enable_result.changed == true
+          - enable_result.state == 'present'
+          - enable_result.timeout == 300
+        msg: "Rollback enable failed"
+
+    - name: Test 3 - Check rollback status after enable
+      siklu.eh.siklu_command:
+        commands:
+          - show rollback
+      register: after_enable
+
+    - name: Verify rollback is active
+      assert:
+        that:
+          - "'300' in after_enable.stdout[0]"
+        msg: "Rollback not showing as active"
+
+    - name: Test 4 - Re-enable with same timeout (idempotency test)
+      siklu.eh.siklu_rollback:
+        state: present
+        timeout: 300
+      register: idempotent_result
+
+    - name: Verify idempotency (no change)
+      assert:
+        that:
+          - idempotent_result.changed == false
+          - idempotent_result.timeout == 300
+        msg: "Rollback not idempotent with same timeout"
+
+    - name: Test 5 - Change rollback timeout to 600 seconds
+      siklu.eh.siklu_rollback:
+        state: present
+        timeout: 600
+      register: change_timeout
+
+    - name: Verify timeout was changed
+      assert:
+        that:
+          - change_timeout.changed == true
+          - change_timeout.timeout == 600
+        msg: "Timeout change failed"
+
+    - name: Test 6 - Check rollback status after timeout change
+      siklu.eh.siklu_command:
+        commands:
+          - show rollback
+      register: after_change
+
+    - name: Verify new timeout is active
+      assert:
+        that:
+          - "'600' in after_change.stdout[0]"
+        msg: "New timeout not reflected in status"
+
+    - name: Test 7 - Clear rollback protection
+      siklu.eh.siklu_rollback:
+        state: absent
+      register: clear_result
+
+    - name: Verify rollback was cleared
+      assert:
+        that:
+          - clear_result.changed == true
+          - clear_result.state == 'absent'
+          - clear_result.timeout == None
+        msg: "Rollback clear failed"
+
+    - name: Test 8 - Check rollback status after clear
+      siklu.eh.siklu_command:
+        commands:
+          - show rollback
+      register: after_clear
+
+    - name: Verify rollback is not started
+      assert:
+        that:
+          - "'not started' in after_clear.stdout[0]"
+        msg: "Rollback still active after clear"
+
+    - name: Test 9 - Clear already cleared rollback (idempotency test)
+      siklu.eh.siklu_rollback:
+        state: absent
+      register: clear_idempotent
+
+    - name: Verify clear idempotency
+      assert:
+        that:
+          - clear_idempotent.changed == false
+        msg: "Clear rollback not idempotent"
+
+    - name: Test 10 - Check mode test (enable)
+      siklu.eh.siklu_rollback:
+        state: present
+        timeout: 900
+      check_mode: true
+      register: check_enable
+
+    - name: Verify check mode (no actual change)
+      assert:
+        that:
+          - check_enable.changed == true  # Would change
+        msg: "Check mode enable failed"
+
+    - name: Test 11 - Verify check mode didn't actually enable
+      siklu.eh.siklu_command:
+        commands:
+          - show rollback
+      register: after_check
+
+    - name: Verify no actual change from check mode
+      assert:
+        that:
+          - "'not started' in after_check.stdout[0]"
+        msg: "Check mode actually changed state"
+
+    - name: Test summary
+      debug:
+        msg: |
+          ✅ All rollback tests passed:
+          - Enable rollback
+          - Idempotency with same timeout
+          - Change timeout
+          - Clear rollback
+          - Idempotency when already cleared
+          - Check mode operation

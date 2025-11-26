@@ -488,6 +488,51 @@ def parse_configuration(output: str) -> str:
 
     return "\n".join(lines)
 
+def parse_rollback_status(output: str) -> dict:
+    """
+    Parse 'show rollback' command output.
+
+    Args:
+        output: Raw command output from 'show rollback'
+
+    Returns:
+        Dictionary with rollback status:
+        {
+            'active': bool,        # True if rollback timer is active
+            'timeout': int | None  # Timeout value in seconds, None if not started
+        }
+
+    Example output:
+        "rollback timeout                   : not started"
+        "rollback timeout                   : 9000"
+    """
+    result: dict[str, bool | int | None] = {
+        'active': False,
+        'timeout': None
+    }
+
+    for line in output.strip().split('\n'):
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+
+        if ':' in line:
+            key, value = line.split(':', 1)
+            key = key.strip().lower()
+            value = value.strip()
+
+            if 'rollback timeout' in key:
+                if value.lower() == 'not started':
+                    result['active'] = False
+                    result['timeout'] = None
+                else:
+                    # Value is timeout in seconds
+                    timeout = _convert_to_int(value)
+                    if timeout is not None:
+                        result['active'] = True
+                        result['timeout'] = timeout
+
+    return result
 
 # Aliases for backward compatibility
 parse_show_system = parse_system_info
