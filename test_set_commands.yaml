@@ -1,0 +1,246 @@
+---
+# Integration tests for direct set ip/set route commands
+# Tests low-level CLI commands via siklu_command module
+#
+# Usage:
+#   ansible-playbook test_set_commands.yaml -i inventory.ini -v
+
+- name: Test Direct Set IP and Route Commands
+  hosts: siklu_devices
+  gather_facts: false
+
+  tasks:
+    # Show initial state
+    - name: Show initial IP configuration
+      siklu.eh.siklu_command:
+        commands:
+          - show ip
+      register: initial_ip
+
+    - name: Display initial IP config
+      debug:
+        var: initial_ip.stdout_lines
+
+    - name: Show initial route configuration
+      siklu.eh.siklu_command:
+        commands:
+          - show route
+      register: initial_route
+
+    - name: Display initial route config
+      debug:
+        var: initial_route.stdout_lines
+
+    # Test 1: Direct set ip command (slot 3)
+    - name: Test direct set ip command on slot 3
+      siklu.eh.siklu_command:
+        commands:
+          - set ip 3 ip-addr 10.30.30.30 prefix-len 24 vlan 300
+      register: set_ip_result
+
+    - name: Display set ip result
+      debug:
+        var: set_ip_result.stdout
+
+    - name: Verify set ip response format
+      assert:
+        that:
+          - "'Set done: ip 3' in set_ip_result.stdout[0]"
+        fail_msg: "Set ip command did not return expected success message"
+        success_msg: "Set ip command succeeded"
+
+    - name: Verify IP was configured (slot 3)
+      siklu.eh.siklu_command:
+        commands:
+          - show ip 3
+      register: verify_ip3
+
+    - name: Check IP 3 configuration
+      assert:
+        that:
+          - "'10.30.30.30' in verify_ip3.stdout[0]"
+          - "'24' in verify_ip3.stdout[0]"
+          - "'300' in verify_ip3.stdout[0]"
+        fail_msg: "IP slot 3 not configured correctly"
+        success_msg: "IP slot 3 verified successfully"
+
+    # Test 2: Direct set ip command (slot 4)
+    - name: Test direct set ip command on slot 4
+      siklu.eh.siklu_command:
+        commands:
+          - set ip 4 ip-addr 10.40.40.40 prefix-len 25 vlan 400
+      register: set_ip4_result
+
+    - name: Verify set ip response format (slot 4)
+      assert:
+        that:
+          - "'Set done: ip 4' in set_ip4_result.stdout[0]"
+        fail_msg: "Set ip 4 command failed"
+        success_msg: "Set ip 4 command succeeded"
+
+    # Test 3: Direct set route command (slot 3)
+    - name: Test direct set route command on slot 3
+      siklu.eh.siklu_command:
+        commands:
+          - set route 3 dest 172.30.0.0 prefix-len 16 next-hop 10.30.30.1
+      register: set_route_result
+
+    - name: Display set route result
+      debug:
+        var: set_route_result.stdout
+
+    - name: Verify set route response format
+      assert:
+        that:
+          - "'Set done: route 3' in set_route_result.stdout[0]"
+        fail_msg: "Set route command did not return expected success message"
+        success_msg: "Set route command succeeded"
+
+    - name: Verify route was configured (slot 3)
+      siklu.eh.siklu_command:
+        commands:
+          - show route 3
+      register: verify_route3
+
+    - name: Check route 3 configuration
+      assert:
+        that:
+          - "'172.30.0.0' in verify_route3.stdout[0]"
+          - "'16' in verify_route3.stdout[0]"
+          - "'10.30.30.1' in verify_route3.stdout[0]"
+        fail_msg: "Route slot 3 not configured correctly"
+        success_msg: "Route slot 3 verified successfully"
+
+    # Test 4: Direct set route command (slot 4)
+    - name: Test direct set route command on slot 4
+      siklu.eh.siklu_command:
+        commands:
+          - set route 4 dest 192.168.40.0 prefix-len 24 next-hop 10.40.40.1
+      register: set_route4_result
+
+    - name: Verify set route response format (slot 4)
+      assert:
+        that:
+          - "'Set done: route 4' in set_route4_result.stdout[0]"
+        fail_msg: "Set route 4 command failed"
+        success_msg: "Set route 4 command succeeded"
+
+    # Test 5: Direct set route command (slot 5)
+    - name: Test direct set route command on slot 5
+      siklu.eh.siklu_command:
+        commands:
+          - set route 5 dest 10.50.0.0 prefix-len 16 next-hop 10.30.30.254
+      register: set_route5_result
+
+    - name: Verify set route response format (slot 5)
+      assert:
+        that:
+          - "'Set done: route 5' in set_route5_result.stdout[0]"
+        fail_msg: "Set route 5 command failed"
+        success_msg: "Set route 5 command succeeded"
+
+    # Test 6: Error handling - invalid subnet
+    - name: Test set route with invalid subnet (should fail)
+      siklu.eh.siklu_command:
+        commands:
+          - set route 6 dest 1.2.3.4 prefix-len 24 next-hop 10.30.30.1
+      register: invalid_subnet_result
+      ignore_errors: true
+
+    - name: Verify invalid subnet error was caught
+      assert:
+        that:
+          - invalid_subnet_result.failed or "not a subnet" in invalid_subnet_result.stdout[0]
+        fail_msg: "Invalid subnet should have been rejected"
+        success_msg: "Invalid subnet correctly rejected"
+
+    # Test 7: Error handling - missing IP subnet for route
+    - name: Test set route without matching IP subnet (should fail)
+      siklu.eh.siklu_command:
+        commands:
+          - set route 7 dest 99.99.99.0 prefix-len 24 next-hop 88.88.88.1
+      register: no_subnet_result
+      ignore_errors: true
+
+    - name: Verify missing subnet error was caught
+      assert:
+        that:
+          - no_subnet_result.failed or "subnet not found" in no_subnet_result.stdout[0]
+        fail_msg: "Missing subnet should have been rejected"
+        success_msg: "Missing subnet correctly rejected"
+
+    # Test 8: Show final configuration
+    - name: Show final IP configuration
+      siklu.eh.siklu_command:
+        commands:
+          - show ip
+      register: final_ip
+
+    - name: Display final IP config
+      debug:
+        var: final_ip.stdout_lines
+
+    - name: Show final route configuration
+      siklu.eh.siklu_command:
+        commands:
+          - show route
+      register: final_route
+
+    - name: Display final route config
+      debug:
+        var: final_route.stdout_lines
+
+- name: Cleanup Test Configurations
+  hosts: siklu_devices
+  gather_facts: false
+
+  tasks:
+    - name: Delete test IP on slot 3
+      siklu.eh.siklu_command:
+        commands:
+          - delete ip 3
+      ignore_errors: true
+
+    - name: Delete test IP on slot 4
+      siklu.eh.siklu_command:
+        commands:
+          - delete ip 4
+      ignore_errors: true
+
+    - name: Delete test route on slot 3
+      siklu.eh.siklu_command:
+        commands:
+          - delete route 3
+      ignore_errors: true
+
+    - name: Delete test route on slot 4
+      siklu.eh.siklu_command:
+        commands:
+          - delete route 4
+      ignore_errors: true
+
+    - name: Delete test route on slot 5
+      siklu.eh.siklu_command:
+        commands:
+          - delete route 5
+      ignore_errors: true
+
+    - name: Delete test route on slot 6 (if exists)
+      siklu.eh.siklu_command:
+        commands:
+          - delete route 6
+      ignore_errors: true
+
+    - name: Delete test route on slot 7 (if exists)
+      siklu.eh.siklu_command:
+        commands:
+          - delete route 7
+      ignore_errors: true
+
+    - name: Save configuration after cleanup
+      siklu.eh.siklu_save_config:
+      ignore_errors: true
+
+    - name: Display cleanup completion
+      debug:
+        msg: "Test cleanup completed - all test configurations removed"
