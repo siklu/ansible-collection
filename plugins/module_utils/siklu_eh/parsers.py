@@ -441,7 +441,7 @@ def parse_inventory(output: str) -> dict[str, Any]:
         for child_id, child_component in components_by_id.items():
             if child_component.get("cont_in") == parent_id:
                 comp_copy = child_component.copy()
-                nested = build_hierarchy(child_id, visited.copy())
+                nested = build_hierarchy(child_id, visited)
                 comp_copy["components"] = nested
                 children.append(comp_copy)
         children.sort(key=lambda x: x.get("rel_pos", 999))
