@@ -436,12 +436,12 @@ def parse_inventory(output: str) -> dict[str, Any]:
         # Prevent infinite recursion by tracking visited nodes
         if parent_id in visited:
             return children
-        visited.add(parent_id)
 
         for child_id, child_component in components_by_id.items():
             if child_component.get("cont_in") == parent_id:
                 comp_copy = child_component.copy()
-                nested = build_hierarchy(child_id, visited)
+                # Create new visited set for this branch (add current parent)
+                nested = build_hierarchy(child_id, visited | {parent_id})
                 comp_copy["components"] = nested
                 children.append(comp_copy)
         children.sort(key=lambda x: x.get("rel_pos", 999))
