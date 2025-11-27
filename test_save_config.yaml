@@ -4,7 +4,7 @@
   gather_facts: false
 
   tasks:
-    - name: Get initial config checksum
+    - name: Get initial running configuration
       siklu.eh.siklu_command:
         commands:
           - copy running-configuration display
@@ -12,7 +12,7 @@
 
     - name: Display initial config
       debug:
-        msg: "Initial config lines: {{ initial_config.stdout[0] | length }}"
+        msg: "Initial config size: {{ initial_config.stdout[0] | length }} characters"
 
     - name: Save configuration
       siklu.eh.siklu_save_config:
@@ -45,7 +45,7 @@
 
     - name: Display startup config size
       debug:
-        msg: "Startup config lines: {{ startup_config.stdout[0] | length }}"
+        msg: "Startup config size: {{ startup_config.stdout[0] | length }} characters"
 
     - name: Test idempotency - save again
       siklu.eh.siklu_save_config:
@@ -65,8 +65,8 @@
           ========================================
           Save Config Module Test Summary
           ========================================
-          Initial config size: {{ initial_config.stdout[0] | length }} bytes
-          Startup config size: {{ startup_config.stdout[0] | length }} bytes
+          Initial config size: {{ initial_config.stdout[0] | length }} characters
+          Startup config size: {{ startup_config.stdout[0] | length }} characters
           Save operation: SUCCESS
           Idempotency: VERIFIED
           ========================================

@@ -6,7 +6,7 @@ help:
 	@echo "  make build         - Build collection tarball"
 	@echo "  make clean         - Remove build artifacts"
 	@echo "  make test-unit     - Run all unit tests (pytest)"
-	@echo "  make test          - Run all integration tests"
+	@echo "  make test          - Run integration tests"
 	@echo "  make test-all      - Run unit + integration tests"
 	@echo "  make rebuild       - Clean, install, and test-all"
 
