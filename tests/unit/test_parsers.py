@@ -183,6 +183,7 @@ inventory 14 fru                       : true
         # Fields that have values should not be None
         assert bb_board["hw_rev"] is not None
         assert bb_board["serial"] is not None
+        assert bb_board["mfg_name"] is not None
 
     def test_parse_inventory_type_conversions(self, inventory_output_8010):
         """Test field type conversions."""

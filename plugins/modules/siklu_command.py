@@ -49,7 +49,6 @@ stdout_lines:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.connection import Connection
-from ansible_collections.siklu.eh.plugins.module_utils.siklu_eh.exceptions import SikluError
 
 
 def run_commands(connection: Connection, commands: list[str]) -> list[str]:
@@ -74,17 +73,12 @@ def main() -> None:
     """Main module execution."""
     module = AnsibleModule(
         argument_spec={
-            'commands': {
-                'type': 'list',
-                'required': True,
-                'elements': 'str'
-            },
+            'commands': {'type': 'list', 'required': True, 'elements': 'str'},
         },
         supports_check_mode=True
     )
 
     commands = module.params['commands']
-
     if not commands:
         module.fail_json(msg="At least one command is required")
 
@@ -97,8 +91,6 @@ def main() -> None:
             stdout=responses,
             stdout_lines=[r.split('\n') for r in responses]
         )
-    except SikluError as exc:
-        module.fail_json(msg=f"Module execution failed: {exc}")
     except Exception as exc:
         module.fail_json(msg=f"Unexpected error: {exc}")
 
