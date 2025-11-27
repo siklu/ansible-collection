@@ -107,10 +107,7 @@
         fail_msg: "Route idempotency failed - configuration changed"
         success_msg: "Route idempotency test passed"
 
-    # ============================================================
     # Rollback Protection Tests for IP Changes
-    # ============================================================
-
     - name: Test IP change with rollback protection
       block:
         - name: Enable rollback protection (300 seconds)
@@ -176,10 +173,7 @@
               Device will auto-revert to startup config if rollback is still active.
               This is expected behavior if connectivity was lost.
 
-    # ============================================================
     # Error Handling Tests
-    # ============================================================
-
     - name: Test invalid subnet (should fail)
       siklu.eh.siklu_config:
         config:
@@ -227,52 +221,51 @@
       debug:
         var: final_config.stdout_lines
 
-  # ============================================================
-  # NEW: Cleanup Block
-  # ============================================================
-  always:
-    - name: Cleanup test configurations
-      block:
-        - name: Remove test IP on slot 3
-          siklu.eh.siklu_command:
-            commands:
-              - delete ip 3
-          ignore_errors: true
+- name: Cleanup Test Configurations
+  hosts: siklu_devices
+  gather_facts: false
 
-        - name: Remove test IP on slot 4
-          siklu.eh.siklu_command:
-            commands:
-              - delete ip 4
-          ignore_errors: true
+  tasks:
+    - name: Remove test IP on slot 3
+      siklu.eh.siklu_command:
+        commands:
+          - delete ip 3
+      ignore_errors: true
 
-        - name: Remove test route on slot 4
-          siklu.eh.siklu_command:
-            commands:
-              - delete route 4
-          ignore_errors: true
+    - name: Remove test IP on slot 4
+      siklu.eh.siklu_command:
+        commands:
+          - delete ip 4
+      ignore_errors: true
 
-        - name: Remove test route on slot 5
-          siklu.eh.siklu_command:
-            commands:
-              - delete route 5
-          ignore_errors: true
+    - name: Remove test route on slot 4
+      siklu.eh.siklu_command:
+        commands:
+          - delete route 4
+      ignore_errors: true
 
-        - name: Remove test route on slot 8
-          siklu.eh.siklu_command:
-            commands:
-              - delete route 8
-          ignore_errors: true
+    - name: Remove test route on slot 5
+      siklu.eh.siklu_command:
+        commands:
+          - delete route 5
+      ignore_errors: true
 
-        - name: Remove test route on slot 9
-          siklu.eh.siklu_command:
-            commands:
-              - delete route 9
-          ignore_errors: true
+    - name: Remove test route on slot 8
+      siklu.eh.siklu_command:
+        commands:
+          - delete route 8
+      ignore_errors: true
 
-        - name: Save configuration after cleanup
-          siklu.eh.siklu_save_config:
-          ignore_errors: true
+    - name: Remove test route on slot 9
+      siklu.eh.siklu_command:
+        commands:
+          - delete route 9
+      ignore_errors: true
 
-        - name: Display cleanup result
-          debug:
-            msg: "Test cleanup completed"
+    - name: Save configuration after cleanup
+      siklu.eh.siklu_save_config:
+      ignore_errors: true
+
+    - name: Display cleanup result
+      debug:
+        msg: "Test cleanup completed"
