@@ -395,7 +395,7 @@ def parse_inventory(output: str) -> dict[str, Any]:
         if not line:
             continue
 
-        # Match "inventory : " - uses .* to handle empty values
+        # Match "inventory <id> <key> : <value>" - uses .* to handle empty values
         match = re.match(r"inventory\s+(\d+)\s+(\S+)\s*:\s*(.*)", line)
         if not match:
             continue
@@ -539,9 +539,10 @@ def parse_rollback_status(output: str) -> dict[str, bool | int | None]:
 
     Returns:
         Dictionary with rollback status:
-
-        'active': bool, # True if rollback timer is active
-        'timeout': int | None # Timeout value in seconds, None if not started
+        {
+            'active': bool,        # True if rollback timer is active
+            'timeout': int | None  # Timeout value in seconds, None if not started
+        }
 
         Example output:
         "rollback timeout : not started"
