@@ -175,8 +175,12 @@ inventory 14 fru                       : true
         result = parse_inventory(inventory_output_8010)
         chassis = result["chassis"]
         bb_board = chassis["components"][0]
+
+        # Empty fields are set to None in the dict
         assert bb_board.get("fw_rev") is None
         assert bb_board.get("sw_rev") is None
+
+        # Fields that have values should not be None
         assert bb_board["hw_rev"] is not None
         assert bb_board["serial"] is not None
 
