@@ -1,4 +1,4 @@
-.PHONY: help install build clean test-unit test test-save-config rebuild
+.PHONY: help install build clean test-unit test rebuild
 
 help:
 	@echo "Siklu EH Ansible Collection - Available targets:"
