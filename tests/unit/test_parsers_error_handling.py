@@ -1,5 +1,6 @@
 """
 Unit tests for error handling in Siklu EH parsers.
+
 Tests realistic error scenarios based on actual parser behavior.
 Parsers use regex patterns - if pattern doesn't match, field is not extracted.
 """
@@ -22,35 +23,66 @@ class TestParserErrorHandling:
     # ============================================================
 
     def test_parse_system_info_empty_output(self):
-        """Test parser handles empty output gracefully."""
+        """Parser should handle empty output gracefully."""
         result = parse_system_info("")
         assert isinstance(result, dict)
         assert result.get("model") is None
 
     def test_parse_system_info_minimal_data(self):
-        """Test parser handles minimal valid data."""
-        output = "system description EH-8010FX\n"
+        """Parser should handle minimal valid system description."""
+        output = "system description : EH-8010FX\n"
         result = parse_system_info(output)
-        # Parser should extract model from description
-        assert result.get("model") == "EH-8010FX" or result.get("model") is None
+        assert result.get("model") == "EH-8010FX"
+
+    def test_parse_system_info_invalid_temperature_ignored(self):
+        """Parser should ignore temperature with non-numeric value."""
+        output = "system description : EH-8010FX\nsystem temperature : invalid_temp\n"
+        result = parse_system_info(output)
+        # Temperature field should not be present since pattern requires \d+
+        assert "temperature" not in result
+        # But model should still be parsed
+        assert result.get("model") == "EH-8010FX"
+
+    def test_parse_system_info_invalid_cli_timeout_ignored(self):
+        """Parser should ignore cli-timeout with non-numeric value."""
+        output = "system description : EH-8010FX\nsystem cli-timeout : not_a_number\n"
+        result = parse_system_info(output)
+        # cli_timeout field should not be present since pattern requires \d+
+        assert "cli_timeout" not in result
+        # But model should still be parsed
+        assert result.get("model") == "EH-8010FX"
+
+    def test_parse_system_info_valid_numeric_temperature(self):
+        """Parser should convert valid numeric temperature to int."""
+        output = "system description : EH-8010FX\nsystem temperature : 57\n"
+        result = parse_system_info(output)
+        assert result.get("temperature") == 57
+        assert isinstance(result.get("temperature"), int)
+
+    def test_parse_system_info_valid_numeric_cli_timeout(self):
+        """Parser should convert valid numeric cli-timeout to int."""
+        output = "system description : EH-8010FX\nsystem cli-timeout : 15\n"
+        result = parse_system_info(output)
+        assert result.get("cli_timeout") == 15
+        assert isinstance(result.get("cli_timeout"), int)
 
     # ============================================================
     # IP Config Parser - Error Cases
     # ============================================================
 
     def test_parse_ip_config_empty_output(self):
-        """Test parser returns empty dict for empty output."""
+        """Parser should return empty dict for empty output."""
         result = parse_ip_config("")
         assert result == {}
 
     def test_parse_ip_config_malformed_slot(self):
-        """Test parser returns empty dict when slot is not numeric."""
-        output = "set ip invalid ip-addr 10.0.0.1 prefix-len 24 vlan 100\n"
+        """Parser should ignore entries with non-numeric slot."""
+        output = "ip invalid ip-addr : 10.0.0.1\n"
         result = parse_ip_config(output)
         assert result == {}
 
     def test_parse_ip_config_no_matches(self):
-        """Test parser returns empty dict when output has no set ip lines."""
+        """Parser should return empty dict when no set ip lines."""
         output = "show running-configuration\nsome other output\n"
         result = parse_ip_config(output)
         assert result == {}
@@ -60,18 +92,18 @@ class TestParserErrorHandling:
     # ============================================================
 
     def test_parse_route_config_empty_output(self):
-        """Test parser returns empty dict for empty output."""
+        """Parser should return empty dict for empty output."""
         result = parse_route_config("")
         assert result == {}
 
     def test_parse_route_config_malformed_slot(self):
-        """Test parser returns empty dict when slot is not numeric."""
-        output = "set route bad dest 10.0.0.0 prefix-len 24 next-hop 172.16.0.1\n"
+        """Parser should ignore entries with non-numeric slot."""
+        output = "route bad dest : 10.0.0.0\n"
         result = parse_route_config(output)
         assert result == {}
 
     def test_parse_route_config_no_matches(self):
-        """Test parser returns empty dict when output has no set route lines."""
+        """Parser should return empty dict when no set route lines."""
         output = "show routes\nno routes found\n"
         result = parse_route_config(output)
         assert result == {}
@@ -81,12 +113,12 @@ class TestParserErrorHandling:
     # ============================================================
 
     def test_parse_inventory_empty_output(self):
-        """Test parser handles empty output."""
+        """Parser should handle empty output and return a dict."""
         result = parse_inventory("")
         assert isinstance(result, dict)
 
-    def test_parse_inventory_returns_dict(self):
-        """Test parser always returns dict structure."""
+    def test_parse_inventory_returns_dict_for_garbage(self):
+        """Parser should return dict structure even for garbage data."""
         result = parse_inventory("garbage data")
         assert isinstance(result, dict)
 
@@ -95,35 +127,47 @@ class TestParserErrorHandling:
     # ============================================================
 
     def test_parse_rf_status_empty_output(self):
-        """Test parser handles empty output."""
+        """Parser should handle empty output and return a dict."""
         result = parse_rf_status("")
         assert isinstance(result, dict)
 
     def test_parse_rf_status_invalid_numeric_fields(self):
-        """Test parser handles non-numeric values in numeric fields."""
-        output = "rf cinr invalid_value\nrf rssi not_a_number\n"
+        """Parser should handle non-numeric RF values gracefully."""
+        output = "rf cinr : invalid_value\nrf rssi : not_a_number\n"
         result = parse_rf_status(output)
-        # Parser should not set these fields if conversion fails
+        # Conversion helpers return None for invalid values
         assert result.get("cinr") is None
         assert result.get("rssi") is None
 
     def test_parse_rf_status_valid_partial_data(self):
-        """Test parser handles partial valid RF status data."""
-        output = "rf operational up\nrf tx-state normal\n"
+        """Parser should handle partial but valid RF status data."""
+        output = "rf operational : up\nrf tx-state : normal\n"
         result = parse_rf_status(output)
-        # Should return dict with available fields
         assert isinstance(result, dict)
+        assert result.get("operational") == "up"
+        assert result.get("tx_state") == "normal"
+
+    def test_parse_rf_status_valid_numeric_fields(self):
+        """Parser should convert valid numeric RF fields to int/float."""
+        output = "rf cinr : 15.5\nrf rssi : -60\n"
+        result = parse_rf_status(output)
+        assert result.get("cinr") == 15.5
+        assert isinstance(result.get("cinr"), float)
+
+        # rssi is also treated as float by parser
+        assert result.get("rssi") == -60.0
+        assert isinstance(result.get("rssi"), float)
 
     # ============================================================
     # SW Info Parser - Graceful Degradation
     # ============================================================
 
     def test_parse_sw_info_empty_output(self):
-        """Test parser handles empty output."""
+        """Parser should handle empty output and return a dict."""
         result = parse_sw_info("")
         assert isinstance(result, dict)
 
-    def test_parse_sw_info_returns_dict(self):
-        """Test parser always returns dict structure."""
+    def test_parse_sw_info_returns_dict_for_garbage(self):
+        """Parser should return dict structure even for garbage data."""
         result = parse_sw_info("no valid data")
         assert isinstance(result, dict)
