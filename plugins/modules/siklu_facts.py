@@ -213,7 +213,8 @@ ansible_facts:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.connection import Connection, ConnectionError
+from ansible.module_utils.connection import Connection
+from ansible.module_utils.connection import ConnectionError as AnsibleConnectionError
 from ansible_collections.siklu.eh.plugins.module_utils.siklu_eh.parsers import (
     parse_system_info,
     parse_sw_info,
@@ -297,7 +298,7 @@ class FactsGatherer:
         try:
             output = self.connection.get(command)
             return output
-        except ConnectionError as exc:
+        except AnsibleConnectionError as exc:
             raise Exception(f"Connection error executing '{command}': {str(exc)}") from exc
         except Exception as exc:
             raise Exception(f"Failed to execute '{command}': {str(exc)}") from exc

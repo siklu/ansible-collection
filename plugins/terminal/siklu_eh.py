@@ -26,10 +26,4 @@ class TerminalModule(TerminalBase):
     ]
 
     def on_open_shell(self) -> None:
-        """
-        Called when shell is opened.
-
-        Siklu EH doesn't support terminal length/width commands.
-        Pagination is not implemented in the device.
-        """
-        pass
+        """Called when shell is opened. No pagination in Siklu EH devices."""
