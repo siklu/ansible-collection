@@ -11,7 +11,6 @@ version_added: "1.0.0"
 """
 
 import json
-from ansible.module_utils.common.text.converters import to_text
 from ansible_collections.ansible.netcommon.plugins.plugin_utils.cliconf_base import CliconfBase
 from ansible_collections.siklu.eh.plugins.module_utils.siklu_eh.connection_utils import (
     get_system_info,
@@ -62,7 +61,7 @@ class Cliconf(CliconfBase):
             self,
             source: str = 'running',
             flags: list[str] | None = None,
-            format: str | None = None
+            output_format: str | None = None
     ) -> str:
         """
         Get configuration - not applicable for Siklu EH.
@@ -89,6 +88,7 @@ class Cliconf(CliconfBase):
     def get(
             self,
             command: str | None = None,
+            *,
             prompt: str | None = None,
             answer: str | None = None,
             sendonly: bool = False,
@@ -126,7 +126,7 @@ class Cliconf(CliconfBase):
         Returns:
             JSON string with capability information
         """
-        result = super(Cliconf, self).get_capabilities()
+        result = super().get_capabilities()
         result['rpc'] = self.get_base_rpc()
         result['network_api'] = 'cliconf'
         result['device_info'] = self.get_device_info()

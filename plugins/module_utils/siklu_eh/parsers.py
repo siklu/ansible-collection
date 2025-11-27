@@ -89,63 +89,63 @@ def parse_system_info(output: str) -> dict[str, str | int | None]:
 def parse_sw_info(output: str) -> dict[str, dict[str, str | int | bool]]:
     """
     Parse 'show sw' command output.
-    
+
     Args:
         output: Raw output from 'show sw' command
-        
+
     Returns:
         Dictionary with keys 'running' and 'standby':
             - version: Software version string
             - bank: Bank number (1 or 2)
             - scheduled_to_run: Boolean
             - startup_config: Boolean (whether startup-config exists)
-            
+
     Example output:
-        Flash Bank    Version                           Running     Scheduled to run    startup-config  
-        1             10.6.0-18451-c009ec33d1           yes         no                  exists          
+        Flash Bank    Version                           Running     Scheduled to run    startup-config
+        1             10.6.0-18451-c009ec33d1           yes         no                  exists
         2             10.8.2-19409-92aead94fe           no          no                  missing
     """
     info: dict[str, dict[str, str | int | bool]] = {}
-    
+
     for line in output.split('\n'):
         if 'Flash Bank' in line or not line.strip():
             continue
-            
+
         match = re.search(
             r'^\s*(\d+)\s+(\S+)\s+(yes|no)\s+(yes|no)\s+(exists|missing)',
             line,
             re.IGNORECASE
         )
-        
+
         if match:
             bank_num = int(match.group(1))
             version = match.group(2)
             is_running = match.group(3).lower() == 'yes'
             scheduled = match.group(4).lower() == 'yes'
             has_config = match.group(5).lower() == 'exists'
-            
+
             bank_data = {
                 'version': version,
                 'bank': bank_num,
                 'scheduled_to_run': scheduled,
                 'startup_config': has_config,
             }
-            
+
             if is_running:
                 info['running'] = bank_data
             else:
                 info['standby'] = bank_data
-    
+
     return info
 
 
 def parse_ip_config(output: str) -> dict[int, dict[str, str | int]]:
     """
     Parse 'show ip' command output.
-    
+
     Args:
         output: Raw output from 'show ip' or 'show ip <slot>' command
-        
+
     Returns:
         Dictionary keyed by slot number, values contain:
             - ip: IP address string
@@ -155,12 +155,12 @@ def parse_ip_config(output: str) -> dict[int, dict[str, str | int]]:
     """
     config: dict[int, dict[str, str | int]] = {}
     current_slot = 0
-    
+
     for line in output.split('\n'):
         line = line.strip()
         if not line:
             continue
-        
+
         match = re.search(r'^ip\s+(\d+)\s+ip-addr\s+:\s+(?:static\s+)?(\S+)', line)
         if match:
             current_slot = int(match.group(1))
@@ -168,35 +168,35 @@ def parse_ip_config(output: str) -> dict[int, dict[str, str | int]]:
             config[current_slot] = {}
             config[current_slot]['ip'] = ip_addr
             continue
-        
+
         if current_slot == 0:
             continue
-        
+
         match = re.search(r'^ip\s+\d+\s+prefix-len\s+:\s+(\d+)', line)
         if match:
             config[current_slot]['prefix_len'] = int(match.group(1))
             continue
-        
+
         match = re.search(r'^ip\s+\d+\s+vlan\s+:\s+(\d+)', line)
         if match:
             config[current_slot]['vlan'] = int(match.group(1))
             continue
-        
+
         match = re.search(r'^ip\s+\d+\s+default-gateway\s+:\s+(\S+)', line)
         if match:
             config[current_slot]['default_gateway'] = match.group(1)
             continue
-    
+
     return config
 
 
 def parse_route_config(output: str) -> dict[int, dict[str, str | int]]:
     """
     Parse 'show route' command output.
-    
+
     Args:
         output: Raw output from 'show route' or 'show route <slot>' command
-        
+
     Returns:
         Dictionary keyed by slot number, values contain:
             - dest: Destination IP address
@@ -205,12 +205,12 @@ def parse_route_config(output: str) -> dict[int, dict[str, str | int]]:
     """
     config: dict[int, dict[str, str | int]] = {}
     current_slot = 0
-    
+
     for line in output.split('\n'):
         line = line.strip()
         if not line:
             continue
-        
+
         match = re.search(r'^route\s+(\d+)\s+dest\s+:\s+(\S+)', line)
         if match:
             current_slot = int(match.group(1))
@@ -218,31 +218,31 @@ def parse_route_config(output: str) -> dict[int, dict[str, str | int]]:
             config[current_slot] = {}
             config[current_slot]['dest'] = dest
             continue
-        
+
         if current_slot == 0:
             continue
-        
+
         match = re.search(r'^route\s+\d+\s+prefix-len\s+:\s+(\d+)', line)
         if match:
             config[current_slot]['prefix_len'] = int(match.group(1))
             continue
-        
+
         match = re.search(r'^route\s+\d+\s+next-hop\s+:\s+(\S+)', line)
         if match:
             config[current_slot]['next_hop'] = match.group(1)
             continue
-    
+
     return config
 
 
 def validate_set_ip_response(output: str, slot: int) -> bool:
     """
     Validate 'set ip' command response.
-    
+
     Args:
         output: Raw output from 'set ip' command
         slot: Expected slot number
-        
+
     Returns:
         True if response indicates success, False otherwise
     """
@@ -253,11 +253,11 @@ def validate_set_ip_response(output: str, slot: int) -> bool:
 def validate_set_route_response(output: str, slot: int) -> bool:
     """
     Validate 'set route' command response.
-    
+
     Args:
         output: Raw output from 'set route' command
         slot: Expected slot number
-        
+
     Returns:
         True if response indicates success, False otherwise
     """
@@ -380,7 +380,7 @@ def parse_inventory(output: str) -> dict[str, Any]:
         current_component = components_by_id[comp_id]
 
         # Type conversions
-        if key == "cont_in" or key == "rel_pos":
+        if key in ("cont_in", "rel_pos"):
             current_component[key] = _convert_to_int(value)
         elif key == "fru":
             current_component[key] = _convert_to_bool(value)

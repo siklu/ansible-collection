@@ -188,12 +188,12 @@ def main() -> None:
                 # Need to set rollback (new or different timeout)
                 if not module.check_mode:
                     response = set_rollback(connection, timeout)
-                    
+
                     # Verify response indicates success
                     response_lower = response.lower()
                     if 'set done' not in response_lower and 'rollbacktimeout' not in response_lower:
                         module.fail_json(msg=f'Unexpected response from set rollback: {response}')
-                
+
                 changed = True
                 if current_active:
                     msg = f"Rollback timeout changed from {current_timeout} to {timeout} seconds"
@@ -210,12 +210,12 @@ def main() -> None:
                 # Need to clear rollback
                 if not module.check_mode:
                     response = clear_rollback(connection)
-                    
+
                     # Verify response indicates success
                     response_lower = response.lower()
                     if 'rollback cleared' not in response_lower:
                         module.fail_json(msg=f'Unexpected response from clear rollback: {response}')
-                
+
                 changed = True
                 msg = f"Rollback cleared (was active with {current_timeout} second timeout)"
 

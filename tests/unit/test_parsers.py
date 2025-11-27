@@ -75,7 +75,7 @@ inventory 1 class                     : chassis
 inventory 1 rel-pos                   : -1
 inventory 1 name                      : Chassis
 inventory 1 hw-rev                    : D1
-inventory 1 fw-rev                    : 
+inventory 1 fw-rev                    :
 inventory 1 sw-rev                    : 10.8.2-19419-f50a23d53d
 inventory 1 serial                    : FC18594555
 inventory 1 mfg-name                  : Siklu
@@ -88,11 +88,11 @@ inventory 2 class                     : container
 inventory 2 rel-pos                   : 0
 inventory 2 name                      : Base Band
 inventory 2 hw-rev                    : 2.0.
-inventory 2 fw-rev                    : 
-inventory 2 sw-rev                    : 
+inventory 2 fw-rev                    :
+inventory 2 sw-rev                    :
 inventory 2 serial                    : FC17588055
 inventory 2 mfg-name                  : Siklu
-inventory 2 model-name                : 
+inventory 2 model-name                :
 inventory 2 fru                       : false
 
 inventory 6 desc                      : Modem Chip
@@ -101,11 +101,11 @@ inventory 6 class                     : container
 inventory 6 rel-pos                   : 0
 inventory 6 name                      : Modem
 inventory 6 hw-rev                    : 110
-inventory 6 fw-rev                    : 
-inventory 6 sw-rev                    : 
-inventory 6 serial                    : 
+inventory 6 fw-rev                    :
+inventory 6 sw-rev                    :
+inventory 6 serial                    :
 inventory 6 mfg-name                  : Siklu
-inventory 6 model-name                : 
+inventory 6 model-name                :
 inventory 6 fru                       : false
 
 inventory 14 desc                      : Dual media: SFP (empty)
@@ -113,12 +113,12 @@ inventory 14 cont-in                   : 10
 inventory 14 class                     : module
 inventory 14 rel-pos                   : 0
 inventory 14 name                      : Sfp eth2
-inventory 14 hw-rev                    : 
-inventory 14 fw-rev                    : 
-inventory 14 sw-rev                    : 
-inventory 14 serial                    : 
+inventory 14 hw-rev                    :
+inventory 14 fw-rev                    :
+inventory 14 sw-rev                    :
+inventory 14 serial                    :
 inventory 14 mfg-name                  : N/A
-inventory 14 model-name                : 
+inventory 14 model-name                :
 inventory 14 fru                       : true
 """
 
@@ -178,11 +178,11 @@ inventory 14 fru                       : true
 
         # Find component with empty values
         bb_board = chassis["components"][0]
-        
+
         # Empty fields are set to None in the dict
         assert bb_board.get("fw_rev") is None
         assert bb_board.get("sw_rev") is None
-        
+
         # Fields that have values should not be None
         assert bb_board["hw_rev"] is not None
         assert bb_board["serial"] is not None
