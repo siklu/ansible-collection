@@ -88,6 +88,7 @@ class Cliconf(CliconfBase):
     def get(
             self,
             command: str | None = None,
+            *,
             prompt: str | None = None,
             answer: str | None = None,
             sendonly: bool = False,
