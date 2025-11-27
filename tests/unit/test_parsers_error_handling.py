@@ -122,6 +122,16 @@ class TestParserErrorHandling:
         result = parse_inventory("garbage data")
         assert isinstance(result, dict)
 
+    def test_parse_inventory_valid_chassis_only(self):
+        """Parser should extract valid chassis-only inventory data."""
+        output = "inventory 0 description : EH-8010FX\ninventory 0 cont-in : 0\n"
+        result = parse_inventory(output)
+        assert isinstance(result, dict)
+        assert "chassis" in result
+        chassis = result["chassis"]
+        assert chassis.get("description") == "EH-8010FX"
+        assert chassis.get("cont_in") == 0
+
     # ============================================================
     # RF Status Parser - Graceful Degradation
     # ============================================================
@@ -158,6 +168,22 @@ class TestParserErrorHandling:
         assert result.get("rssi") == -60.0
         assert isinstance(result.get("rssi"), float)
 
+    def test_parse_rf_status_comprehensive_data(self):
+        """Parser should handle comprehensive RF status output."""
+        output = """rf operational : up
+rf tx-state : normal
+rf cinr : 18.5
+rf rssi : -55
+rf tx-frequency : 73400000
+rf rx-frequency : 81400000"""
+        result = parse_rf_status(output)
+        assert result.get("operational") == "up"
+        assert result.get("tx_state") == "normal"
+        assert result.get("cinr") == 18.5
+        assert result.get("rssi") == -55.0
+        assert result.get("tx_frequency") == 73400000
+        assert result.get("rx_frequency") == 81400000
+
     # ============================================================
     # SW Info Parser - Graceful Degradation
     # ============================================================
@@ -171,3 +197,39 @@ class TestParserErrorHandling:
         """Parser should return dict structure even for garbage data."""
         result = parse_sw_info("no valid data")
         assert isinstance(result, dict)
+
+    def test_parse_sw_info_valid_running_bank(self):
+        """Parser should extract valid running software info."""
+        output = """Flash Bank Version Running Scheduled to run startup-config
+1 10.6.0-18451-c009ec33d1 yes no exists
+2 10.8.2-19409-92aead94fe no no missing"""
+        result = parse_sw_info(output)
+        assert "running" in result
+        running = result["running"]
+        assert running.get("version") == "10.6.0-18451-c009ec33d1"
+        assert running.get("bank") == 1
+        assert running.get("scheduled_to_run") is False
+        assert running.get("startup_config") is True
+
+    def test_parse_sw_info_valid_standby_bank(self):
+        """Parser should extract valid standby software info."""
+        output = """Flash Bank Version Running Scheduled to run startup-config
+1 10.6.0-18451-c009ec33d1 yes no exists
+2 10.8.2-19409-92aead94fe no no missing"""
+        result = parse_sw_info(output)
+        assert "standby" in result
+        standby = result["standby"]
+        assert standby.get("version") == "10.8.2-19409-92aead94fe"
+        assert standby.get("bank") == 2
+        assert standby.get("scheduled_to_run") is False
+        assert standby.get("startup_config") is False
+
+    def test_parse_sw_info_scheduled_upgrade(self):
+        """Parser should handle scheduled upgrade scenario."""
+        output = """Flash Bank Version Running Scheduled to run startup-config
+1 10.6.0-18451-c009ec33d1 yes no exists
+2 10.8.2-19409-92aead94fe no yes exists"""
+        result = parse_sw_info(output)
+        standby = result.get("standby", {})
+        assert standby.get("scheduled_to_run") is True
+        assert standby.get("startup_config") is True

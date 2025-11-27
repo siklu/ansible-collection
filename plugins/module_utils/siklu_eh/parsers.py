@@ -2,10 +2,13 @@
 Parsers for Siklu EH device command outputs.
 
 This module provides parsing functions for various Siklu EH CLI commands.
+
 All functions are pure and side-effect free for easy testing.
+
 """
 
 import re
+
 from typing import Any
 
 
@@ -18,21 +21,21 @@ def parse_system_info(output: str) -> dict[str, str | int | None]:
 
     Returns:
         Dictionary with system information:
-            - model: Device model (e.g., 'EH-8010FX')
-            - snmp_id: SNMP OID
-            - uptime: System uptime string
-            - contact: Contact name
-            - name: System name
-            - hostname: System hostname
-            - location: System location
-            - voltage: Voltage source (e.g., 'poe (injector)')
-            - temperature: Temperature in Celsius (int)
-            - date: System date (YYYY.MM.DD)
-            - time: System time (HH:MM:SS)
-            - cli_timeout: CLI session timeout in minutes (int)
-            - loop_permission: Loop permission setting
-            - antenna_heater: Antenna heater status
-            - heartbeat_trap_period: SNMP heartbeat trap period in seconds (int)
+        - model: Device model (e.g., 'EH-8010FX')
+        - snmp_id: SNMP OID
+        - uptime: System uptime string
+        - contact: Contact name
+        - name: System name
+        - hostname: System hostname
+        - location: System location
+        - voltage: Voltage source (e.g., 'poe (injector)')
+        - temperature: Temperature in Celsius (int)
+        - date: System date (YYYY.MM.DD)
+        - time: System time (HH:MM:SS)
+        - cli_timeout: CLI session timeout in minutes (int)
+        - loop_permission: Loop permission setting
+        - antenna_heater: Antenna heater status
+        - heartbeat_trap_period: SNMP heartbeat trap period in seconds (int)
 
     Example output:
         system description               : EH-8010FX
@@ -50,10 +53,13 @@ def parse_system_info(output: str) -> dict[str, str | int | None]:
         system loop-permission           : mac-swap
         system antenna-heater            : disabled
         system heartbeat-trap-period     : 0
+
     """
+
     info: dict[str, str | int | None] = {}
 
     # Parse each field using regex patterns
+
     patterns = {
         'model': r'system description\s+:\s+(\S+)',
         'snmp_id': r'system snmpid\s+:\s+(\S+)',
@@ -76,7 +82,6 @@ def parse_system_info(output: str) -> dict[str, str | int | None]:
         match = re.search(pattern, output)
         if match:
             value = match.group(1).strip()
-
             # Convert to int for numeric fields
             if field in ('temperature', 'cli_timeout', 'heartbeat_trap_period'):
                 info[field] = int(value)
@@ -95,16 +100,18 @@ def parse_sw_info(output: str) -> dict[str, dict[str, str | int | bool]]:
 
     Returns:
         Dictionary with keys 'running' and 'standby':
-            - version: Software version string
-            - bank: Bank number (1 or 2)
-            - scheduled_to_run: Boolean
-            - startup_config: Boolean (whether startup-config exists)
+        - version: Software version string
+        - bank: Bank number (1 or 2)
+        - scheduled_to_run: Boolean
+        - startup_config: Boolean (whether startup-config exists)
 
     Example output:
         Flash Bank    Version                           Running     Scheduled to run    startup-config
         1             10.6.0-18451-c009ec33d1           yes         no                  exists
         2             10.8.2-19409-92aead94fe           no          no                  missing
+
     """
+
     info: dict[str, dict[str, str | int | bool]] = {}
 
     for line in output.split('\n'):
@@ -148,11 +155,13 @@ def parse_ip_config(output: str) -> dict[int, dict[str, str | int]]:
 
     Returns:
         Dictionary keyed by slot number, values contain:
-            - ip: IP address string
-            - prefix_len: Prefix length (int)
-            - vlan: VLAN ID (int)
-            - default_gateway: Default gateway IP (derived field)
+        - ip: IP address string
+        - prefix_len: Prefix length (int)
+        - vlan: VLAN ID (int)
+        - default_gateway: Default gateway IP (derived field)
+
     """
+
     config: dict[int, dict[str, str | int]] = {}
     current_slot = 0
 
@@ -199,10 +208,12 @@ def parse_route_config(output: str) -> dict[int, dict[str, str | int]]:
 
     Returns:
         Dictionary keyed by slot number, values contain:
-            - dest: Destination IP address
-            - prefix_len: Prefix length (int)
-            - next_hop: Next hop IP address
+        - dest: Destination IP address
+        - prefix_len: Prefix length (int)
+        - next_hop: Next hop IP address
+
     """
+
     config: dict[int, dict[str, str | int]] = {}
     current_slot = 0
 
@@ -245,7 +256,9 @@ def validate_set_ip_response(output: str, slot: int) -> bool:
 
     Returns:
         True if response indicates success, False otherwise
+
     """
+
     pattern = rf'Set done:\s+ip\s+{slot}'
     return bool(re.search(pattern, output, re.IGNORECASE))
 
@@ -260,7 +273,9 @@ def validate_set_route_response(output: str, slot: int) -> bool:
 
     Returns:
         True if response indicates success, False otherwise
+
     """
+
     pattern = rf'Set done:\s+route\s+{slot}'
     return bool(re.search(pattern, output, re.IGNORECASE))
 
@@ -279,12 +294,16 @@ def _normalize_empty_value(value: str) -> str | None:
 
     Returns:
         None if value is empty or N/A variant, otherwise original value
+
     """
+
     if not value or value.strip() == "":
         return None
+
     normalized = value.strip().lower()
     if normalized in ("n/a", "default"):
         return None
+
     return value.strip()
 
 
@@ -297,10 +316,13 @@ def _convert_to_int(value: str) -> int | None:
 
     Returns:
         Integer value or None if conversion fails or value is empty
+
     """
+
     normalized = _normalize_empty_value(value)
     if normalized is None:
         return None
+
     try:
         return int(normalized)
     except (ValueError, TypeError):
@@ -316,10 +338,13 @@ def _convert_to_float(value: str) -> float | None:
 
     Returns:
         Float value or None if conversion fails or value is empty
+
     """
+
     normalized = _normalize_empty_value(value)
     if normalized is None:
         return None
+
     try:
         return float(normalized)
     except (ValueError, TypeError):
@@ -335,15 +360,19 @@ def _convert_to_bool(value: str) -> bool | None:
 
     Returns:
         Boolean value or None if not a recognized boolean string
+
     """
+
     normalized = _normalize_empty_value(value)
     if normalized is None:
         return None
+
     lower = normalized.lower()
     if lower == "true":
         return True
     if lower == "false":
         return False
+
     return None
 
 
@@ -356,7 +385,9 @@ def parse_inventory(output: str) -> dict[str, Any]:
 
     Returns:
         Dictionary with 'chassis' key containing hierarchical inventory tree
+
     """
+
     components_by_id: dict[int, dict[str, Any]] = {}
 
     for line in output.strip().split("\n"):
@@ -364,7 +395,7 @@ def parse_inventory(output: str) -> dict[str, Any]:
         if not line:
             continue
 
-        # Match "inventory <id> <key> : <value>" - uses .* to handle empty values
+        # Match "inventory : " - uses .* to handle empty values
         match = re.match(r"inventory\s+(\d+)\s+(\S+)\s*:\s*(.*)", line)
         if not match:
             continue
@@ -399,24 +430,30 @@ def parse_inventory(output: str) -> dict[str, Any]:
     if not chassis:
         return {"chassis": {}}
 
-    def build_hierarchy(parent_id: int) -> list[dict[str, Any]]:
-        """Recursively build component hierarchy."""
+    def build_hierarchy(parent_id: int, visited: set[int]) -> list[dict[str, Any]]:
+        """Recursively build component hierarchy with cycle detection."""
         children = []
+        # Prevent infinite recursion by tracking visited nodes
+        if parent_id in visited:
+            return children
+        visited.add(parent_id)
+
         for child_id, child_component in components_by_id.items():
             if child_component.get("cont_in") == parent_id:
                 comp_copy = child_component.copy()
-                nested = build_hierarchy(child_id)
-                comp_copy["components"] = nested  # Always add for consistency
+                nested = build_hierarchy(child_id, visited.copy())
+                comp_copy["components"] = nested
                 children.append(comp_copy)
         children.sort(key=lambda x: x.get("rel_pos", 999))
         return children
 
     chassis_id = chassis.get("id")
     if not isinstance(chassis_id, int):
-        return {"chassis": {}}  # Shouldn't happen, but safe
+        return {"chassis": {}}
 
-    chassis["components"] = build_hierarchy(chassis_id)
+    chassis["components"] = build_hierarchy(chassis_id, set())
     return {"chassis": chassis}
+
 
 def parse_rf_status(output: str) -> dict[str, Any]:
     """
@@ -427,7 +464,9 @@ def parse_rf_status(output: str) -> dict[str, Any]:
 
     Returns:
         Dictionary with RF status information with appropriate type conversions
+
     """
+
     rf_status = {}
 
     # Fields that should be converted to int
@@ -477,7 +516,9 @@ def parse_configuration(output: str) -> str:
 
     Returns:
         Raw configuration as string (minimal processing - just strip empty lines)
+
     """
+
     # Remove leading/trailing whitespace and excessive blank lines
     lines = []
     for line in output.splitlines():
@@ -488,6 +529,7 @@ def parse_configuration(output: str) -> str:
 
     return "\n".join(lines)
 
+
 def parse_rollback_status(output: str) -> dict[str, bool | int | None]:
     """
     Parse 'show rollback' command output.
@@ -497,15 +539,16 @@ def parse_rollback_status(output: str) -> dict[str, bool | int | None]:
 
     Returns:
         Dictionary with rollback status:
-        {
-            'active': bool,        # True if rollback timer is active
-            'timeout': int | None  # Timeout value in seconds, None if not started
-        }
 
-    Example output:
-        "rollback timeout                   : not started"
-        "rollback timeout                   : 9000"
+        'active': bool, # True if rollback timer is active
+        'timeout': int | None # Timeout value in seconds, None if not started
+
+        Example output:
+        "rollback timeout : not started"
+        "rollback timeout : 9000"
+
     """
+
     result: dict[str, bool | int | None] = {
         'active': False,
         'timeout': None
