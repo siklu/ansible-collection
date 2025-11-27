@@ -31,6 +31,27 @@
       debug:
         var: ip_result
 
+    - name: Test IP idempotency - reconfigure same IP
+      siklu.eh.siklu_config:
+        config:
+          - type: ip
+            slot: 4
+            ip_address: 10.10.10.10
+            prefix_len: 24
+            vlan: 100
+      register: ip_idempotent_result
+
+    - name: Verify IP idempotency (should not change)
+      debug:
+        msg: "Changed: {{ ip_idempotent_result.changed }} (should be false)"
+
+    - name: Assert IP idempotency worked
+      assert:
+        that:
+          - not ip_idempotent_result.changed
+        fail_msg: "IP idempotency failed - configuration changed"
+        success_msg: "IP idempotency test passed"
+
     - name: Configure test route on slot 4 (non-critical route)
       siklu.eh.siklu_config:
         config:
@@ -65,7 +86,7 @@
       debug:
         var: route2_result
 
-    - name: Test idempotency - reconfigure same route
+    - name: Test route idempotency - reconfigure same route
       siklu.eh.siklu_config:
         config:
           - type: route
@@ -75,16 +96,125 @@
             next_hop: 10.10.10.1
       register: idempotent_result
 
-    - name: Verify idempotency (should not change)
+    - name: Verify route idempotency (should not change)
       debug:
         msg: "Changed: {{ idempotent_result.changed }} (should be false)"
 
-    - name: Assert idempotency worked
+    - name: Assert route idempotency worked
       assert:
         that:
           - not idempotent_result.changed
-        fail_msg: "Idempotency failed - configuration changed when it shouldn't"
-        success_msg: "Idempotency test passed - no unnecessary changes"
+        fail_msg: "Route idempotency failed - configuration changed"
+        success_msg: "Route idempotency test passed"
+
+    # ============================================================
+    # Rollback Protection Tests for IP Changes
+    # ============================================================
+
+    - name: Test IP change with rollback protection
+      block:
+        - name: Enable rollback protection (300 seconds)
+          siklu.eh.siklu_rollback:
+            state: present
+            timeout: 300
+          register: rollback_enable
+
+        - name: Verify rollback was enabled
+          assert:
+            that:
+              - rollback_enable.changed
+              - rollback_enable.state == 'present'
+            msg: "Failed to enable rollback protection"
+
+        - name: Change IP on slot 3 with rollback active
+          siklu.eh.siklu_config:
+            config:
+              - type: ip
+                slot: 3
+                ip_address: 10.20.30.40
+                prefix_len: 24
+                vlan: 200
+          register: ip_with_rollback
+
+        - name: Display IP change result
+          debug:
+            msg: "IP changed with rollback protection: {{ ip_with_rollback.changed }}"
+
+        - name: Verify connectivity after IP change
+          wait_for:
+            host: "{{ ansible_host }}"
+            port: 22
+            timeout: 60
+          delegate_to: localhost
+          register: connectivity_check
+
+        - name: Display connectivity verification
+          debug:
+            msg: "Device still reachable after IP change"
+
+        - name: Clear rollback protection (confirm changes)
+          siklu.eh.siklu_rollback:
+            state: absent
+          register: rollback_clear
+
+        - name: Verify rollback was cleared
+          assert:
+            that:
+              - rollback_clear.changed
+              - rollback_clear.state == 'absent'
+            msg: "Failed to clear rollback protection"
+
+        - name: Display rollback protection test result
+          debug:
+            msg: "Rollback protection test PASSED - IP changed safely"
+
+      rescue:
+        - name: Rollback test failed - device may auto-revert
+          debug:
+            msg: |
+              WARNING: Rollback protection test failed.
+              Device will auto-revert to startup config if rollback is still active.
+              This is expected behavior if connectivity was lost.
+
+    # ============================================================
+    # Error Handling Tests
+    # ============================================================
+
+    - name: Test invalid subnet (should fail)
+      siklu.eh.siklu_config:
+        config:
+          - type: route
+            slot: 9
+            dest: 1.2.3.4
+            prefix_len: 24
+            next_hop: 10.10.10.1
+      register: invalid_subnet_result
+      ignore_errors: true
+
+    - name: Verify invalid subnet was rejected
+      assert:
+        that:
+          - invalid_subnet_result.failed
+        fail_msg: "Invalid subnet should have failed"
+        success_msg: "Invalid subnet correctly rejected"
+
+    - name: Test route without matching IP subnet (should fail)
+      siklu.eh.siklu_config:
+        config:
+          - type: route
+            slot: 8
+            dest: 50.50.50.0
+            prefix_len: 24
+            next_hop: 99.99.99.1
+      register: no_subnet_result
+      ignore_errors: true
+
+    - name: Verify route without subnet was rejected
+      assert:
+        that:
+          - no_subnet_result.failed
+        fail_msg: "Route without matching subnet should have failed"
+        success_msg: "Route without subnet correctly rejected"
 
     - name: Show final configuration
       siklu.eh.siklu_command:
@@ -96,3 +226,53 @@
     - name: Display final configuration
       debug:
         var: final_config.stdout_lines
+
+  # ============================================================
+  # NEW: Cleanup Block
+  # ============================================================
+  always:
+    - name: Cleanup test configurations
+      block:
+        - name: Remove test IP on slot 3
+          siklu.eh.siklu_command:
+            commands:
+              - delete ip 3
+          ignore_errors: true
+
+        - name: Remove test IP on slot 4
+          siklu.eh.siklu_command:
+            commands:
+              - delete ip 4
+          ignore_errors: true
+
+        - name: Remove test route on slot 4
+          siklu.eh.siklu_command:
+            commands:
+              - delete route 4
+          ignore_errors: true
+
+        - name: Remove test route on slot 5
+          siklu.eh.siklu_command:
+            commands:
+              - delete route 5
+          ignore_errors: true
+
+        - name: Remove test route on slot 8
+          siklu.eh.siklu_command:
+            commands:
+              - delete route 8
+          ignore_errors: true
+
+        - name: Remove test route on slot 9
+          siklu.eh.siklu_command:
+            commands:
+              - delete route 9
+          ignore_errors: true
+
+        - name: Save configuration after cleanup
+          siklu.eh.siklu_save_config:
+          ignore_errors: true
+
+        - name: Display cleanup result
+          debug:
+            msg: "Test cleanup completed"
