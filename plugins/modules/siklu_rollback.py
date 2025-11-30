@@ -163,8 +163,8 @@ def main() -> None:
     state = module.params['state']
     timeout = module.params.get('timeout')
 
-    # Validate timeout range
-    if timeout is not None and not (0 <= timeout <= 86400):
+    # Validate timeout is within allowed range (0-86400 seconds = 24 hours)
+    if timeout is not None and (timeout < 0 or timeout > 86400):
         module.fail_json(msg='Timeout must be between 0 and 86400 seconds')
 
     try:
