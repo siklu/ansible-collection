@@ -395,7 +395,7 @@ def parse_inventory(output: str) -> dict[str, Any]:
         if not line:
             continue
 
-        # Match "inventory <id> <key> : <value>" - uses .* to handle empty values
+        # Match "inventory <id> <field> : <value>" - uses .* to handle empty values
         match = re.match(r"inventory\s+(\d+)\s+(\S+)\s*:\s*(.*)", line)
         if not match:
             continue
@@ -431,19 +431,28 @@ def parse_inventory(output: str) -> dict[str, Any]:
         return {"chassis": {}}
 
     def build_hierarchy(parent_id: int, visited: set[int]) -> list[dict[str, Any]]:
-        """Recursively build component hierarchy with cycle detection."""
+        """
+        Recursively build component hierarchy with cycle detection.
+
+        Each recursive call receives a new visited set containing all ancestors
+        in the current path. The `visited | {parent_id}` operation creates a new
+        set for each child branch, allowing siblings to be processed independently
+        while preventing circular references in the ancestry chain.
+        """
         children = []
-        # Prevent infinite recursion by tracking visited nodes
+
+        # Prevent infinite recursion - check if current parent is in ancestry chain
         if parent_id in visited:
             return children
 
         for child_id, child_component in components_by_id.items():
             if child_component.get("cont_in") == parent_id:
                 comp_copy = child_component.copy()
-                # Create new visited set for this branch (add current parent)
+                # Recursively build this child's hierarchy with updated ancestry set
                 nested = build_hierarchy(child_id, visited | {parent_id})
                 comp_copy["components"] = nested
                 children.append(comp_copy)
+
         children.sort(key=lambda x: x.get("rel_pos", 999))
         return children
 
@@ -488,7 +497,7 @@ def parse_rf_status(output: str) -> dict[str, Any]:
         if not line or line.startswith("#"):
             continue
 
-        # Match "rf <key> : <value>"
+        # Match "rf <field> : <value>"
         match = re.match(r"rf\s+(\S+)\s*:\s*(.*)", line)
         if match:
             key = match.group(1).replace("-", "_")

@@ -15,12 +15,8 @@ from ansible_collections.siklu.eh.plugins.module_utils.siklu_eh.parsers import (
 )
 
 
-class TestParserErrorHandling:
-    """Test error handling and edge cases in parsers."""
-
-    # ============================================================
-    # System Info Parser - Graceful Degradation
-    # ============================================================
+class TestSystemInfoParser:
+    """Test system info parser error handling and edge cases."""
 
     def test_parse_system_info_empty_output(self):
         """Parser should handle empty output gracefully."""
@@ -66,9 +62,9 @@ class TestParserErrorHandling:
         assert result.get("cli_timeout") == 15
         assert isinstance(result.get("cli_timeout"), int)
 
-    # ============================================================
-    # IP Config Parser - Error Cases
-    # ============================================================
+
+class TestIpConfigParser:
+    """Test IP config parser error handling."""
 
     def test_parse_ip_config_empty_output(self):
         """Parser should return empty dict for empty output."""
@@ -87,9 +83,9 @@ class TestParserErrorHandling:
         result = parse_ip_config(output)
         assert result == {}
 
-    # ============================================================
-    # Route Config Parser - Error Cases
-    # ============================================================
+
+class TestRouteConfigParser:
+    """Test route config parser error handling."""
 
     def test_parse_route_config_empty_output(self):
         """Parser should return empty dict for empty output."""
@@ -108,9 +104,9 @@ class TestParserErrorHandling:
         result = parse_route_config(output)
         assert result == {}
 
-    # ============================================================
-    # Inventory Parser - Graceful Degradation
-    # ============================================================
+
+class TestInventoryParser:
+    """Test inventory parser error handling and edge cases."""
 
     def test_parse_inventory_empty_output(self):
         """Parser should handle empty output and return a dict."""
@@ -124,17 +120,36 @@ class TestParserErrorHandling:
 
     def test_parse_inventory_valid_chassis_only(self):
         """Parser should extract valid chassis-only inventory data."""
-        output = "inventory 0 description : EH-8010FX\ninventory 0 cont-in : 0\n"
+        output = "inventory 1 desc : EH-8010FX\ninventory 1 cont-in : 0\n"
         result = parse_inventory(output)
         assert isinstance(result, dict)
         assert "chassis" in result
         chassis = result["chassis"]
-        assert chassis.get("description") == "EH-8010FX"
+        assert chassis.get("desc") == "EH-8010FX"
         assert chassis.get("cont_in") == 0
 
-    # ============================================================
-    # RF Status Parser - Graceful Degradation
-    # ============================================================
+    def test_parse_inventory_prevents_circular_reference(self):
+        """Parser should handle circular references without infinite recursion."""
+        # Test case with a circular reference: component 2's cont_in points to component 3,
+        # and component 3's cont_in points back to component 2
+        circular_output = """inventory 1 desc : Chassis
+inventory 1 cont-in : 0
+inventory 1 class : chassis
+inventory 2 desc : Component A
+inventory 2 cont-in : 3
+inventory 2 class : module
+inventory 3 desc : Component B
+inventory 3 cont-in : 2
+inventory 3 class : module
+"""
+        result = parse_inventory(circular_output)
+        # Should not raise RecursionError
+        assert isinstance(result, dict)
+        assert "chassis" in result
+
+
+class TestRfStatusParser:
+    """Test RF status parser error handling and edge cases."""
 
     def test_parse_rf_status_empty_output(self):
         """Parser should handle empty output and return a dict."""
@@ -184,9 +199,9 @@ rf rx-frequency : 81400000"""
         assert result.get("tx_frequency") == 73400000
         assert result.get("rx_frequency") == 81400000
 
-    # ============================================================
-    # SW Info Parser - Graceful Degradation
-    # ============================================================
+
+class TestSwInfoParser:
+    """Test software info parser error handling and edge cases."""
 
     def test_parse_sw_info_empty_output(self):
         """Parser should handle empty output and return a dict."""
