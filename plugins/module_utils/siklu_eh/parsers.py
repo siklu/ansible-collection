@@ -106,11 +106,9 @@ def parse_sw_info(output: str) -> dict[str, dict[str, str | int | bool]]:
         - startup_config: Boolean (whether startup-config exists)
 
     Example output:
-# pylint: disable=line-too-long
-        Flash Bank    Version                           Running     Scheduled to run    startup-config
-        1             10.6.0-18451-c009ec33d1           yes         no                  exists
-        2             10.8.2-19409-92aead94fe           no          no                  missing
-
+Flash Bank    Version                           Running     Scheduled to run    startup-config
+1             10.6.0-18451-c009ec33d1           yes         no                  exists
+2             10.8.2-19409-92aead94fe           no          no                  missing
     """
 
     info: dict[str, dict[str, str | int | bool]] = {}
