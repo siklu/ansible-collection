@@ -164,7 +164,7 @@ def main() -> None:
     timeout = module.params.get('timeout')
 
     # Validate timeout is within allowed range (0-86400 seconds = 24 hours)
-    if timeout is not None and (timeout < 0 or timeout > 86400):
+    if timeout is not None and not (0 <= timeout <= 86400):  # pylint: disable=superfluous-parens
         module.fail_json(msg='Timeout must be between 0 and 86400 seconds')
 
     try:
