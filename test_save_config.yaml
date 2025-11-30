@@ -1,0 +1,72 @@
+---
+- name: Test Siklu Save Config Module
+  hosts: siklu_devices
+  gather_facts: false
+
+  tasks:
+    - name: Get initial running configuration
+      siklu.eh.siklu_command:
+        commands:
+          - copy running-configuration display
+      register: initial_config
+
+    - name: Display initial config
+      debug:
+        msg: "Initial config size: {{ initial_config.stdout[0] | length }} characters"
+
+    - name: Save configuration
+      siklu.eh.siklu_save_config:
+      register: save_result
+
+    - name: Display save result
+      debug:
+        var: save_result
+
+    - name: Verify save was successful
+      assert:
+        that:
+          - save_result is defined
+          - save_result is not failed
+        fail_msg: "Config save failed or module error"
+        success_msg: "Config saved successfully"
+
+    - name: Get config after save
+      siklu.eh.siklu_command:
+        commands:
+          - copy startup-configuration display
+      register: startup_config
+
+    - name: Verify startup config exists
+      assert:
+        that:
+          - startup_config.stdout[0] | length > 0
+        fail_msg: "Startup config is empty"
+        success_msg: "Startup config verified"
+
+    - name: Display startup config size
+      debug:
+        msg: "Startup config size: {{ startup_config.stdout[0] | length }} characters"
+
+    - name: Test idempotency - save again
+      siklu.eh.siklu_save_config:
+      register: save_idempotent
+
+    - name: Verify idempotency (should succeed again)
+      assert:
+        that:
+          - save_idempotent is defined
+          - save_idempotent is not failed
+        fail_msg: "Save idempotency test failed"
+        success_msg: "Save idempotency verified"
+
+    - name: Display save config test summary
+      debug:
+        msg: |
+          ========================================
+          Save Config Module Test Summary
+          ========================================
+          Initial config size: {{ initial_config.stdout[0] | length }} characters
+          Startup config size: {{ startup_config.stdout[0] | length }} characters
+          Save operation: SUCCESS
+          Idempotency: VERIFIED
+          ========================================
