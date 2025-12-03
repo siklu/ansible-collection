@@ -34,7 +34,7 @@ notes:
   - Use rollback when changing critical parameters (IP addresses, RF settings, routing)
   - Always verify device connectivity before clearing rollback
 author:
-  - Ceragon Networks DevOps Team
+  - Dmitry Grinberg (Ceragon Networks)
 """
 
 EXAMPLES = """

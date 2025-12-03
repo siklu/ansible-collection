@@ -12,14 +12,14 @@ short_description: Gather facts from Siklu EH devices
 description:
   - Gathers comprehensive device facts from Siklu EH radio devices
   - Supports multiple fact subsets including system, software, IP, routes, inventory, RF, and config
-  - All gathered facts are returned under ansible_facts with 'ansible_net_' prefix
+  - All gathered facts are returned under ansible_facts with ansible_net_ prefix
 version_added: "1.0.1"
 options:
   gather_subset:
     description:
       - List of fact subsets to gather
-      - Use 'all' to gather all available facts except 'config' and 'config_startup'
-      - 'config' and 'config_startup' must be explicitly requested due to potentially large output
+      - Use all to gather all available facts except config and config_startup
+      - config and config_startup must be explicitly requested due to potentially large output
     type: list
     elements: str
     default: ['all']
@@ -34,9 +34,9 @@ options:
       - config
       - config_startup
 author:
-  - Ceragon Networks DevOps Team
+  - Dmitry Grinberg (Ceragon Networks)
 notes:
-  - The 'config' and 'config_startup' subsets are not included in 'all' and must be explicitly requested
+  - The config and config_startup subsets are not included in all and must be explicitly requested
   - RF status shows real-time radio link state and signal quality
   - Inventory provides hierarchical view of hardware components
   - Config subsets return raw configuration in set-command format

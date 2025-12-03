@@ -381,4 +381,4 @@ ansible-playbook test_rollback.yaml -i inventory.ini -v
 - Error handling and validation
 
 ## Authors
-- Ceragon Networks DevOps Team
+- Dmitry Grinberg (Ceragon Networks)

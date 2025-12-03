@@ -5,15 +5,15 @@
 - name: Test siklu_facts module - Phase 1.1 features
   hosts: siklu_devices
   gather_facts: false
-  
+
   tasks:
     # Test 1: Gather default facts (excludes config, config_startup, inventory, rf)
     - name: Gather all default facts
       siklu.eh.siklu_facts:
       register: all_facts
-      
+
     - name: Verify default facts were gathered
-      assert:
+      ansible.builtin.assert:
         that:
           - all_facts.ansible_facts.ansible_net_system is defined
           - all_facts.ansible_facts.ansible_net_software is defined
@@ -24,11 +24,10 @@
           - all_facts.ansible_facts.ansible_net_inventory is not defined
           - all_facts.ansible_facts.ansible_net_rf is not defined
         msg: "Default facts gathering failed"
-    
-    - name: Display system name
-      debug:
-        msg: "Device name: {{ all_facts.ansible_facts.ansible_net_system.name }}"
 
+    - name: Display system name
+      ansible.builtin.debug:
+        msg: "Device name: {{ all_facts.ansible_facts.ansible_net_system.name }}"
 
     # Test 2: Gather inventory subset
     - name: Gather hardware inventory
@@ -36,9 +35,9 @@
         gather_subset:
           - inventory
       register: inventory_facts
-      
+
     - name: Verify inventory structure
-      assert:
+      ansible.builtin.assert:
         that:
           - inventory_facts.ansible_facts.ansible_net_inventory is defined
           - inventory_facts.ansible_facts.ansible_net_inventory.chassis is defined
@@ -46,9 +45,9 @@
           - inventory_facts.ansible_facts.ansible_net_inventory.chassis.serial is defined
           - inventory_facts.ansible_facts.ansible_net_inventory.chassis.components is defined
         msg: "Inventory facts validation failed"
-    
+
     - name: Display chassis information
-      debug:
+      ansible.builtin.debug:
         msg: |
           Chassis: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.desc | default('N/A') }}
           Serial: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.serial | default('N/A') }}
@@ -56,16 +55,15 @@
           SW Ver: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.sw_rev | default('N/A') }}
           Components: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.components | length }}
 
-
     # Test 3: Gather RF status subset
     - name: Gather RF status
       siklu.eh.siklu_facts:
         gather_subset:
           - rf
       register: rf_facts
-      
+
     - name: Verify RF facts structure
-      assert:
+      ansible.builtin.assert:
         that:
           - rf_facts.ansible_facts.ansible_net_rf is defined
           - rf_facts.ansible_facts.ansible_net_rf.operational is defined
@@ -73,18 +71,18 @@
           - rf_facts.ansible_facts.ansible_net_rf.rx_frequency is defined
           - rf_facts.ansible_facts.ansible_net_rf.channel_width is defined
         msg: "RF facts validation failed"
-    
+
     - name: Display RF status
-      debug:
+      ansible.builtin.debug:
         msg: |
           RF Status: {{ rf_facts.ansible_facts.ansible_net_rf.operational }}
           TX Freq: {{ rf_facts.ansible_facts.ansible_net_rf.tx_frequency }} MHz
           RX Freq: {{ rf_facts.ansible_facts.ansible_net_rf.rx_frequency }} MHz
           Channel Width: {{ rf_facts.ansible_facts.ansible_net_rf.channel_width }} MHz
           Mode: {{ rf_facts.ansible_facts.ansible_net_rf.mode | default('N/A') }}
-    
+
     - name: Verify RF numeric types
-      assert:
+      ansible.builtin.assert:
         that:
           - rf_facts.ansible_facts.ansible_net_rf.tx_frequency is number
           - rf_facts.ansible_facts.ansible_net_rf.rx_frequency is number
@@ -92,19 +90,18 @@
           - rf_facts.ansible_facts.ansible_net_rf.cinr is number
           - rf_facts.ansible_facts.ansible_net_rf.rssi is number
         msg: "RF numeric type conversion failed"
-    
+
     - name: Check RF link quality
-      debug:
+      ansible.builtin.debug:
         msg: "WARNING: RF link is DOWN"
       when: rf_facts.ansible_facts.ansible_net_rf.operational == "down"
-    
+
     - name: Display RF signal quality (when up)
-      debug:
+      ansible.builtin.debug:
         msg: |
           CINR: {{ rf_facts.ansible_facts.ansible_net_rf.cinr | default('N/A') }} dB
           RSSI: {{ rf_facts.ansible_facts.ansible_net_rf.rssi | default('N/A') }} dBm
       when: rf_facts.ansible_facts.ansible_net_rf.operational == "up"
-
 
     # Test 4: Gather running configuration subset
     - name: Gather running configuration
@@ -112,20 +109,19 @@
         gather_subset:
           - config
       register: running_config
-      
+
     - name: Verify running config was gathered
-      assert:
+      ansible.builtin.assert:
         that:
           - running_config.ansible_facts.ansible_net_config is defined
           - running_config.ansible_facts.ansible_net_config is string
           - "'set' in running_config.ansible_facts.ansible_net_config"
           - running_config.ansible_facts.ansible_net_config_startup is not defined
         msg: "Running configuration facts validation failed"
-    
-    - name: Display running config snippet
-      debug:
-        msg: "Running config lines: {{ running_config.ansible_facts.ansible_net_config.splitlines() | length }}"
 
+    - name: Display running config snippet
+      ansible.builtin.debug:
+        msg: "Running config lines: {{ running_config.ansible_facts.ansible_net_config.splitlines() | length }}"
 
     # Test 5: Gather startup configuration subset
     - name: Gather startup configuration
@@ -133,20 +129,19 @@
         gather_subset:
           - config_startup
       register: startup_config
-      
+
     - name: Verify startup config was gathered
-      assert:
+      ansible.builtin.assert:
         that:
           - startup_config.ansible_facts.ansible_net_config_startup is defined
           - startup_config.ansible_facts.ansible_net_config_startup is string
           - "'set' in startup_config.ansible_facts.ansible_net_config_startup"
           - startup_config.ansible_facts.ansible_net_config is not defined
         msg: "Startup configuration facts validation failed"
-    
-    - name: Display startup config snippet
-      debug:
-        msg: "Startup config lines: {{ startup_config.ansible_facts.ansible_net_config_startup.splitlines() | length }}"
 
+    - name: Display startup config snippet
+      ansible.builtin.debug:
+        msg: "Startup config lines: {{ startup_config.ansible_facts.ansible_net_config_startup.splitlines() | length }}"
 
     # Test 6: Gather both configurations for comparison
     - name: Gather both running and startup configs
@@ -155,19 +150,18 @@
           - config
           - config_startup
       register: both_configs
-      
+
     - name: Verify both configs gathered
-      assert:
+      ansible.builtin.assert:
         that:
           - both_configs.ansible_facts.ansible_net_config is defined
           - both_configs.ansible_facts.ansible_net_config_startup is defined
         msg: "Both configs should be gathered"
-    
+
     - name: Compare running vs startup
-      debug:
+      ansible.builtin.debug:
         msg: "WARNING: Running and startup configs differ!"
       when: both_configs.ansible_facts.ansible_net_config != both_configs.ansible_facts.ansible_net_config_startup
-
 
     # Test 7: Gather multiple specific subsets
     - name: Gather system, RF, and inventory together
@@ -177,9 +171,9 @@
           - rf
           - inventory
       register: multi_facts
-      
+
     - name: Verify multiple subsets gathered
-      assert:
+      ansible.builtin.assert:
         that:
           - multi_facts.ansible_facts.ansible_net_system is defined
           - multi_facts.ansible_facts.ansible_net_rf is defined
@@ -187,42 +181,41 @@
           - multi_facts.ansible_facts.ansible_net_ip is not defined
         msg: "Multiple subset gathering failed"
 
-
     # Test 8: Inventory component hierarchy navigation
     - name: Find BB Board in inventory
-      debug:
+      ansible.builtin.debug:
         msg: "BB Board: {{ item.desc }} - Serial: {{ item.serial }}"
       loop: "{{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.components }}"
       when: "'BB Board' in item.desc"
-    
+
     - name: Check for nested components
-      assert:
+      ansible.builtin.assert:
         that:
           - item.components is defined
         msg: "BB Board should have nested components"
       loop: "{{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.components }}"
       when: "'BB Board' in item.desc"
 
-
     # Test 9: Configuration backup use case
     - name: Backup running config to file
-      copy:
+      ansible.builtin.copy:
         content: "{{ running_config.ansible_facts.ansible_net_config | default('') }}"
         dest: "/tmp/{{ inventory_hostname }}_running_config.txt"
+        mode: "0644"
       delegate_to: localhost
       when: running_config.ansible_facts.ansible_net_config is defined
 
     - name: Backup startup config to file
-      copy:
+      ansible.builtin.copy:
         content: "{{ startup_config.ansible_facts.ansible_net_config_startup | default('') }}"
         dest: "/tmp/{{ inventory_hostname }}_startup_config.txt"
+        mode: "0644"
       delegate_to: localhost
       when: startup_config.ansible_facts.ansible_net_config_startup is defined
 
-
     # Test 10: RF monitoring use case
     - name: Check RF link is operational
-      assert:
+      ansible.builtin.assert:
         that:
           - rf_facts.ansible_facts.ansible_net_rf.operational == "up"
           - rf_facts.ansible_facts.ansible_net_rf.cinr | float > 10.0
@@ -230,9 +223,9 @@
         msg: "RF link quality is below threshold"
       ignore_errors: true
       register: rf_check
-    
+
     - name: Report RF link status
-      debug:
+      ansible.builtin.debug:
         msg: |
           {% if rf_check.failed %}
           RF Link Quality: POOR
@@ -245,16 +238,16 @@
 
     # Test 11: Hardware audit
     - name: Extract all serial numbers from inventory
-      set_fact:
+      ansible.builtin.set_fact:
         all_serials: []
-    
+
     - name: Recursive serial collection (chassis)
-      set_fact:
+      ansible.builtin.set_fact:
         all_serials: "{{ all_serials + [inventory_facts.ansible_facts.ansible_net_inventory.chassis.serial] }}"
       when: inventory_facts.ansible_facts.ansible_net_inventory.chassis.serial is not none
-    
+
     - name: Display hardware audit summary
-      debug:
+      ansible.builtin.debug:
         msg: |
           Device Model: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.model_name | default('N/A') }}
           Total Components: {{ inventory_facts.ansible_facts.ansible_net_inventory.chassis.components | default([]) | length }}
@@ -266,9 +259,9 @@
           - invalid_subset
       register: invalid_result
       ignore_errors: true
-      
+
     - name: Verify error was caught
-      assert:
+      ansible.builtin.assert:
         that:
           - invalid_result.failed
           - invalid_result.msg is search('Got no match for')
@@ -276,7 +269,7 @@
 
     # Summary report
     - name: Generate facts gathering summary
-      debug:
+      ansible.builtin.debug:
         msg: |
           ========================================
           Facts Gathering Test Summary

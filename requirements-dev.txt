@@ -1,5 +1,5 @@
-# Development environment - Ansible 13.x series
-ansible>=13.0.0,<14.0.0
+# Development environment
+ansible-core>=2.20.0,<3.0.0
 
 # SSH/Network connectivity
 ansible-pylibssh>=1.3.0,<2.0.0
@@ -19,7 +19,7 @@ mypy>=1.18.0,<2.0.0
 isort>=7.0.0,<8.0.0
 
 # Ansible-specific linting
-ansible-lint>=25.11.0,<26.0.0
+ansible-lint>=25.12.0,<26.0.0
 yamllint>=1.37.0,<2.0.0
 
 # Documentation generation

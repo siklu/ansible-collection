@@ -11,7 +11,7 @@ description:
   - Ensures configuration survives device reboot
 version_added: "1.0.1"
 author:
-  - Ceragon Networks DevOps Team
+  - Dmitry Grinberg (Ceragon Networks)
 """
 
 EXAMPLES = """

@@ -18,7 +18,7 @@
       register: initial_ip
 
     - name: Display initial IP config
-      debug:
+      ansible.builtin.debug:
         var: initial_ip.stdout_lines
 
     - name: Show initial route configuration
@@ -28,7 +28,7 @@
       register: initial_route
 
     - name: Display initial route config
-      debug:
+      ansible.builtin.debug:
         var: initial_route.stdout_lines
 
     # Test 1: Direct set ip command (slot 3)
@@ -39,11 +39,11 @@
       register: set_ip_result
 
     - name: Display set ip result
-      debug:
+      ansible.builtin.debug:
         var: set_ip_result.stdout
 
     - name: Verify set ip response format
-      assert:
+      ansible.builtin.assert:
         that:
           - "'Set done: ip 3' in set_ip_result.stdout[0]"
         fail_msg: "Set ip command did not return expected success message"
@@ -56,7 +56,7 @@
       register: verify_ip3
 
     - name: Check IP 3 configuration
-      assert:
+      ansible.builtin.assert:
         that:
           - "'10.30.30.30' in verify_ip3.stdout[0]"
           - "'24' in verify_ip3.stdout[0]"
@@ -72,7 +72,7 @@
       register: set_ip4_result
 
     - name: Verify set ip response format (slot 4)
-      assert:
+      ansible.builtin.assert:
         that:
           - "'Set done: ip 4' in set_ip4_result.stdout[0]"
         fail_msg: "Set ip 4 command failed"
@@ -86,11 +86,11 @@
       register: set_route_result
 
     - name: Display set route result
-      debug:
+      ansible.builtin.debug:
         var: set_route_result.stdout
 
     - name: Verify set route response format
-      assert:
+      ansible.builtin.assert:
         that:
           - "'Set done: route 3' in set_route_result.stdout[0]"
         fail_msg: "Set route command did not return expected success message"
@@ -103,7 +103,7 @@
       register: verify_route3
 
     - name: Check route 3 configuration
-      assert:
+      ansible.builtin.assert:
         that:
           - "'172.30.0.0' in verify_route3.stdout[0]"
           - "'16' in verify_route3.stdout[0]"
@@ -119,7 +119,7 @@
       register: set_route4_result
 
     - name: Verify set route response format (slot 4)
-      assert:
+      ansible.builtin.assert:
         that:
           - "'Set done: route 4' in set_route4_result.stdout[0]"
         fail_msg: "Set route 4 command failed"
@@ -133,7 +133,7 @@
       register: set_route5_result
 
     - name: Verify set route response format (slot 5)
-      assert:
+      ansible.builtin.assert:
         that:
           - "'Set done: route 5' in set_route5_result.stdout[0]"
         fail_msg: "Set route 5 command failed"
@@ -148,7 +148,7 @@
       ignore_errors: true
 
     - name: Verify invalid subnet error was caught
-      assert:
+      ansible.builtin.assert:
         that:
           - invalid_subnet_result.failed or "not a subnet" in invalid_subnet_result.stdout[0]
         fail_msg: "Invalid subnet should have been rejected"
@@ -163,7 +163,7 @@
       ignore_errors: true
 
     - name: Verify missing subnet error was caught
-      assert:
+      ansible.builtin.assert:
         that:
           - no_subnet_result.failed or "subnet not found" in no_subnet_result.stdout[0]
         fail_msg: "Missing subnet should have been rejected"
@@ -177,7 +177,7 @@
       register: final_ip
 
     - name: Display final IP config
-      debug:
+      ansible.builtin.debug:
         var: final_ip.stdout_lines
 
     - name: Show final route configuration
@@ -187,7 +187,7 @@
       register: final_route
 
     - name: Display final route config
-      debug:
+      ansible.builtin.debug:
         var: final_route.stdout_lines
 
 - name: Cleanup Test Configurations
@@ -242,5 +242,5 @@
       ignore_errors: true
 
     - name: Display cleanup completion
-      debug:
+      ansible.builtin.debug:
         msg: "Test cleanup completed - all test configurations removed"

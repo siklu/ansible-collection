@@ -11,7 +11,7 @@
       register: current_ip
 
     - name: Display current IP
-      debug:
+      ansible.builtin.debug:
         var: current_ip.stdout_lines
 
     - name: Configure test IP on slot 4 (non-management)
@@ -28,7 +28,7 @@
       register: ip_result
 
     - name: Display IP configuration result
-      debug:
+      ansible.builtin.debug:
         var: ip_result
 
     - name: Test IP idempotency - reconfigure same IP
@@ -42,11 +42,11 @@
       register: ip_idempotent_result
 
     - name: Verify IP idempotency (should not change)
-      debug:
+      ansible.builtin.debug:
         msg: "Changed: {{ ip_idempotent_result.changed }} (should be false)"
 
     - name: Assert IP idempotency worked
-      assert:
+      ansible.builtin.assert:
         that:
           - not ip_idempotent_result.changed
         fail_msg: "IP idempotency failed - configuration changed"
@@ -66,7 +66,7 @@
       register: route_result
 
     - name: Display route configuration result
-      debug:
+      ansible.builtin.debug:
         var: route_result
 
     - name: Configure another test route on slot 5
@@ -83,7 +83,7 @@
       register: route2_result
 
     - name: Display second route result
-      debug:
+      ansible.builtin.debug:
         var: route2_result
 
     - name: Test route idempotency - reconfigure same route
@@ -97,11 +97,11 @@
       register: idempotent_result
 
     - name: Verify route idempotency (should not change)
-      debug:
+      ansible.builtin.debug:
         msg: "Changed: {{ idempotent_result.changed }} (should be false)"
 
     - name: Assert route idempotency worked
-      assert:
+      ansible.builtin.assert:
         that:
           - not idempotent_result.changed
         fail_msg: "Route idempotency failed - configuration changed"
@@ -117,7 +117,7 @@
           register: rollback_enable
 
         - name: Verify rollback was enabled
-          assert:
+          ansible.builtin.assert:
             that:
               - rollback_enable.changed
               - rollback_enable.state == 'present'
@@ -134,11 +134,11 @@
           register: ip_with_rollback
 
         - name: Display IP change result
-          debug:
+          ansible.builtin.debug:
             msg: "IP changed with rollback protection: {{ ip_with_rollback.changed }}"
 
         - name: Verify connectivity after IP change
-          wait_for:
+          ansible.builtin.wait_for:
             host: "{{ ansible_host }}"
             port: 22
             timeout: 60
@@ -146,7 +146,7 @@
           register: connectivity_check
 
         - name: Display connectivity verification
-          debug:
+          ansible.builtin.debug:
             msg: "Device still reachable after IP change"
 
         - name: Clear rollback protection (confirm changes)
@@ -155,19 +155,19 @@
           register: rollback_clear
 
         - name: Verify rollback was cleared
-          assert:
+          ansible.builtin.assert:
             that:
               - rollback_clear.changed
               - rollback_clear.state == 'absent'
             msg: "Failed to clear rollback protection"
 
         - name: Display rollback protection test result
-          debug:
+          ansible.builtin.debug:
             msg: "Rollback protection test PASSED - IP changed safely"
 
       rescue:
         - name: Rollback test failed - device may auto-revert
-          debug:
+          ansible.builtin.debug:
             msg: |
               WARNING: Rollback protection test failed.
               Device will auto-revert to startup config if rollback is still active.
@@ -186,7 +186,7 @@
       ignore_errors: true
 
     - name: Verify invalid subnet was rejected
-      assert:
+      ansible.builtin.assert:
         that:
           - invalid_subnet_result.failed
         fail_msg: "Invalid subnet should have failed"
@@ -204,7 +204,7 @@
       ignore_errors: true
 
     - name: Verify route without subnet was rejected
-      assert:
+      ansible.builtin.assert:
         that:
           - no_subnet_result.failed
         fail_msg: "Route without matching subnet should have failed"
@@ -218,7 +218,7 @@
       register: final_config
 
     - name: Display final configuration
-      debug:
+      ansible.builtin.debug:
         var: final_config.stdout_lines
 
 - name: Cleanup Test Configurations
@@ -267,5 +267,5 @@
       ignore_errors: true
 
     - name: Display cleanup result
-      debug:
+      ansible.builtin.debug:
         msg: "Test cleanup completed"
