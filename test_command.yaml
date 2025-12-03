@@ -11,7 +11,7 @@
       register: system_result
 
     - name: Display system info
-      debug:
+      ansible.builtin.debug:
         var: system_result.stdout_lines
 
     - name: Execute show sw
@@ -21,7 +21,7 @@
       register: sw_result
 
     - name: Display software info
-      debug:
+      ansible.builtin.debug:
         var: sw_result.stdout_lines
 
     - name: Execute show ip
@@ -31,7 +31,7 @@
       register: ip_result
 
     - name: Display IP info
-      debug:
+      ansible.builtin.debug:
         var: ip_result.stdout_lines
 
     - name: Execute multiple commands at once
@@ -43,7 +43,7 @@
       register: multi_result
 
     - name: Display multi-command result
-      debug:
+      ansible.builtin.debug:
         msg: "Executed {{ multi_result.stdout | length }} commands successfully"
 
     - name: Save configuration
@@ -51,5 +51,5 @@
       register: save_result
 
     - name: Display save result
-      debug:
+      ansible.builtin.debug:
         msg: "{{ save_result.msg }}"

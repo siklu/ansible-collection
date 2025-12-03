@@ -18,7 +18,7 @@
       register: initial_status
 
     - name: Display initial rollback status
-      debug:
+      ansible.builtin.debug:
         var: initial_status.stdout_lines
 
     - name: Test 2 - Enable rollback protection (300 seconds)
@@ -28,7 +28,7 @@
       register: enable_result
 
     - name: Verify rollback was enabled
-      assert:
+      ansible.builtin.assert:
         that:
           - enable_result.changed is true
           - enable_result.state == 'present'
@@ -42,7 +42,7 @@
       register: after_enable
 
     - name: Verify rollback is active
-      assert:
+      ansible.builtin.assert:
         that:
           - "'300' in after_enable.stdout[0]"
         msg: "Rollback not showing as active"
@@ -54,7 +54,7 @@
       register: idempotent_result
 
     - name: Verify idempotency (no change)
-      assert:
+      ansible.builtin.assert:
         that:
           - idempotent_result.changed is false
           - idempotent_result.timeout == 300
@@ -67,7 +67,7 @@
       register: change_timeout
 
     - name: Verify timeout was changed
-      assert:
+      ansible.builtin.assert:
         that:
           - change_timeout.changed is true
           - change_timeout.timeout == 600
@@ -80,7 +80,7 @@
       register: after_change
 
     - name: Verify new timeout is active
-      assert:
+      ansible.builtin.assert:
         that:
           - "'600' in after_change.stdout[0]"
         msg: "New timeout not reflected in status"
@@ -91,7 +91,7 @@
       register: clear_result
 
     - name: Verify rollback was cleared
-      assert:
+      ansible.builtin.assert:
         that:
           - clear_result.changed is true
           - clear_result.state == 'absent'
@@ -105,7 +105,7 @@
       register: after_clear
 
     - name: Verify rollback is not started
-      assert:
+      ansible.builtin.assert:
         that:
           - "'not started' in after_clear.stdout[0]"
         msg: "Rollback still active after clear"
@@ -116,7 +116,7 @@
       register: clear_idempotent
 
     - name: Verify clear idempotency
-      assert:
+      ansible.builtin.assert:
         that:
           - clear_idempotent.changed is false
         msg: "Clear rollback not idempotent"
@@ -129,7 +129,7 @@
       register: check_enable
 
     - name: Verify check mode (no actual change)
-      assert:
+      ansible.builtin.assert:
         that:
           - check_enable.changed is true  # Would change
         msg: "Check mode enable failed"
@@ -141,13 +141,13 @@
       register: after_check
 
     - name: Verify no actual change from check mode
-      assert:
+      ansible.builtin.assert:
         that:
           - "'not started' in after_check.stdout[0]"
         msg: "Check mode actually changed state"
 
     - name: Test summary
-      debug:
+      ansible.builtin.debug:
         msg: |
           All rollback tests passed:
           - Enable rollback

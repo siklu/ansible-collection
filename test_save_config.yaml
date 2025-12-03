@@ -11,7 +11,7 @@
       register: initial_config
 
     - name: Display initial config
-      debug:
+      ansible.builtin.debug:
         msg: "Initial config size: {{ initial_config.stdout[0] | length }} characters"
 
     - name: Save configuration
@@ -19,11 +19,11 @@
       register: save_result
 
     - name: Display save result
-      debug:
+      ansible.builtin.debug:
         var: save_result
 
     - name: Verify save was successful
-      assert:
+      ansible.builtin.assert:
         that:
           - save_result is defined
           - save_result is not failed
@@ -37,14 +37,14 @@
       register: startup_config
 
     - name: Verify startup config exists
-      assert:
+      ansible.builtin.assert:
         that:
           - startup_config.stdout[0] | length > 0
         fail_msg: "Startup config is empty"
         success_msg: "Startup config verified"
 
     - name: Display startup config size
-      debug:
+      ansible.builtin.debug:
         msg: "Startup config size: {{ startup_config.stdout[0] | length }} characters"
 
     - name: Test idempotency - save again
@@ -52,7 +52,7 @@
       register: save_idempotent
 
     - name: Verify idempotency (should succeed again)
-      assert:
+      ansible.builtin.assert:
         that:
           - save_idempotent is defined
           - save_idempotent is not failed
@@ -60,7 +60,7 @@
         success_msg: "Save idempotency verified"
 
     - name: Display save config test summary
-      debug:
+      ansible.builtin.debug:
         msg: |
           ========================================
           Save Config Module Test Summary
