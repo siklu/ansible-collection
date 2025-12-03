@@ -117,7 +117,7 @@
           register: rollback_enable
 
         - name: Verify rollback was enabled
-          assert:
+          ansible.builtin.assert:
             that:
               - rollback_enable.changed
               - rollback_enable.state == 'present'
@@ -134,11 +134,11 @@
           register: ip_with_rollback
 
         - name: Display IP change result
-          debug:
+          ansible.builtin.debug:
             msg: "IP changed with rollback protection: {{ ip_with_rollback.changed }}"
 
         - name: Verify connectivity after IP change
-          wait_for:
+          ansible.builtin.wait_for:
             host: "{{ ansible_host }}"
             port: 22
             timeout: 60
@@ -146,7 +146,7 @@
           register: connectivity_check
 
         - name: Display connectivity verification
-          debug:
+          ansible.builtin.debug:
             msg: "Device still reachable after IP change"
 
         - name: Clear rollback protection (confirm changes)
@@ -155,19 +155,19 @@
           register: rollback_clear
 
         - name: Verify rollback was cleared
-          assert:
+          ansible.builtin.assert:
             that:
               - rollback_clear.changed
               - rollback_clear.state == 'absent'
             msg: "Failed to clear rollback protection"
 
         - name: Display rollback protection test result
-          debug:
+          ansible.builtin.debug:
             msg: "Rollback protection test PASSED - IP changed safely"
 
       rescue:
         - name: Rollback test failed - device may auto-revert
-          debug:
+          ansible.builtin.debug:
             msg: |
               WARNING: Rollback protection test failed.
               Device will auto-revert to startup config if rollback is still active.
