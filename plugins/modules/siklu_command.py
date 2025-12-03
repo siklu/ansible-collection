@@ -16,7 +16,7 @@ options:
     type: list
     elements: str
 author:
-  - Ceragon Networks DevOps Team
+  - Dmitry Grinberg (Ceragon Networks)
 """
 
 EXAMPLES = """

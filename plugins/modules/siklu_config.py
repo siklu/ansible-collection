@@ -46,7 +46,7 @@ options:
     type: list
     elements: dict
 author:
-  - Ceragon Networks DevOps Team
+  - Dmitry Grinberg (Ceragon Networks)
 """
 
 EXAMPLES = """

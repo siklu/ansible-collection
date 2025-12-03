@@ -3,7 +3,7 @@ name: eh
 version: 1.1.0
 readme: README.md
 authors:
-  - Ceragon Networks DevOps Team
+  - Dmitry Grinberg (Ceragon Networks)
 description: Ansible Collection for Siklu EH millimeter-wave radio devices
 license:
   - MIT
@@ -12,13 +12,12 @@ documentation: https://github.com/siklu/ansible-collection
 issues: https://github.com/siklu/ansible-collection/issues
 
 tags:
+  - networking
+  - infrastructure
   - siklu
+  - ceragon
   - millimeterwave
-  - network
   - wireless
-  - radio
-  - eh8010
-  - eh8020
 
 dependencies:
   ansible.netcommon: ">=8.1.0"
